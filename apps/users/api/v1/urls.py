@@ -1,8 +1,13 @@
-from django.urls import path
+from django.urls import (
+    path,
+    include
+)
 from apps.users.api.v1.views import (
-    LoginUserDetailView
+    LoginDetailsAPIView,
+RegisterUserAPIView
 )
 
 urlpatterns = [
-    path('login/', LoginUserDetailView.as_view())
+    path('login/', LoginDetailsAPIView.as_view()),
+    path('register/', RegisterUserAPIView.as_view()),
 ]
