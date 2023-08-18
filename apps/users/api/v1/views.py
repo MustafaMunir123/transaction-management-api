@@ -1,9 +1,15 @@
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView, Response, status
+from apps.users.api.permissions import IsAuthenticatedAndAdmin
+from rest_framework.authentication import TokenAuthentication
 from apps.users.api.v1.serializers import (
     LoginSerializer,
     CustomUserSerializer,
     RegisterSerializer
+)
+from apps.users.models import CustomUser
+from apps.utils import (
+    success_response,
 )
 from apps.users.functions import (
     get_token_for_user,
@@ -65,3 +71,26 @@ class RegisterUserAPIView(APIView):
             return Response(serializer.validated_data)
         except Exception as ex:
             raise ex
+
+
+class UserAPIView(APIView):
+    permission_classes = [IsAuthenticatedAndAdmin]
+    authentication_classes = [TokenAuthentication]
+
+    @staticmethod
+    def get_serializer():
+        return CustomUserSerializer
+
+    def get(self, request, pk=None):
+        try:
+            serializer = self.get_serializer()
+            if pk:
+                user = CustomUser.objects.get(id=pk)
+                serializer = serializer(user)
+            else:
+                queryset = CustomUser.objects.all()
+                serializer = serializer(queryset, many=True)
+            return success_response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
