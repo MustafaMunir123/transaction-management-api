@@ -6,7 +6,7 @@ from apps.users.models import CustomUser
 class Account(models.Model):
     objects = None
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='accounts')
-    title = models.CharField(max_length=100, null=False, blank=False)
+    title = models.CharField(max_length=100, null=False, blank=False, unique=True)
     note = models.TextField(max_length=200, null=True)
 
     def __str__(self):

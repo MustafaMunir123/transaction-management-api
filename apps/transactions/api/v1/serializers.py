@@ -3,6 +3,7 @@ from apps.transactions.models import (
     Transaction,
     Account
 )
+from apps.users.api.v1.serializers import CustomUserSerializer
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -21,7 +22,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = '__all__'
+        fields = ['id', 'title', 'note']
 
     def create(self, validated_data):
         return Account.objects.create(**validated_data)
