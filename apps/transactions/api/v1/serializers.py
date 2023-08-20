@@ -1,28 +1,39 @@
 from rest_framework import serializers
-from apps.transactions.models import (
-    Transaction,
-    Account
-)
-from apps.users.api.v1.serializers import CustomUserSerializer
+from apps.transactions.models import Transaction, Account
 
 
 class TransactionSerializer(serializers.ModelSerializer):
+    read_only_fields = ('date', 'time',)
     class Meta:
         model = Transaction
-        fields = '__all__'
+        fields = [
+            "entry_no",
+            "multiply_by",
+            "divide_by",
+            "from_currency",
+            "to_currency",
+            "initial_amount",
+            "converted_amount",
+            "narration",
+            "is_valid",
+            "date",
+            "time"
+        ]
 
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        transaction = Transaction.objects.filter(id=instance.id).update(**validated_data)
+        transaction = Transaction.objects.filter(id=instance.id).update(
+            **validated_data
+        )
         return transaction
 
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['id', 'title', 'note']
+        fields = ["id", "title", "note"]
 
     def create(self, validated_data):
         return Account.objects.create(**validated_data)

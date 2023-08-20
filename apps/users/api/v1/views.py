@@ -5,21 +5,18 @@ from rest_framework.authentication import TokenAuthentication
 from apps.users.api.v1.serializers import (
     LoginSerializer,
     CustomUserSerializer,
-    RegisterSerializer
+    RegisterSerializer,
 )
 from apps.users.models import CustomUser
 from apps.utils import (
     success_response,
 )
-from apps.users.functions import (
-    get_token_for_user,
-    create_token_for_user
-)
+from apps.users.functions import get_token_for_user, create_token_for_user
+
 # Create your views here.
 
 
 class LoginDetailsAPIView(APIView):
-
     @staticmethod
     def get_login_serializer():
         return LoginSerializer
@@ -37,9 +34,7 @@ class LoginDetailsAPIView(APIView):
             password = serializer.validated_data["password"]
             user = authenticate(email=email, password=password)
             if not user:
-                raise ValueError(
-                    "Unable to log in with provided credentials."
-                )
+                raise ValueError("Unable to log in with provided credentials.")
             serializer = self.get_serializer()
             serializer = serializer(user)
             token = get_token_for_user(user)
@@ -52,8 +47,8 @@ class LoginDetailsAPIView(APIView):
         except Exception as err:
             raise err
 
-class RegisterUserAPIView(APIView):
 
+class RegisterUserAPIView(APIView):
     @staticmethod
     def get_serializer():
         return RegisterSerializer
@@ -65,9 +60,7 @@ class RegisterUserAPIView(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             token = create_token_for_user(serializer.validated_data["email"])
-            serializer.validated_data.update({
-                "token": token
-            })
+            serializer.validated_data.update({"token": token})
             return Response(serializer.validated_data)
         except Exception as ex:
             raise ex
@@ -93,4 +86,3 @@ class UserAPIView(APIView):
             return success_response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
-

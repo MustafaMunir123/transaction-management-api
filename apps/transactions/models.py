@@ -1,11 +1,15 @@
 from django.db import models
 from apps.users.models import CustomUser
+from apps.transactions.constants import CURRENCY_CHOICES
 
 # Create your models here.
 
+
 class Account(models.Model):
     objects = None
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='accounts')
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="accounts"
+    )
     title = models.CharField(max_length=100, null=False, blank=False, unique=True)
     note = models.TextField(max_length=200, null=True)
 
@@ -15,13 +19,21 @@ class Account(models.Model):
 
 class Transaction(models.Model):
     objects = None
-    entry_no = models.BigAutoField(primary_key=True)
-    from_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transactions_from')
-    to_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transactions_to')
+    entry_no = models.BigAutoField(primary_key=True, auto_created=True, serialize=False)
+    from_account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="transactions_from"
+    )
+    to_account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="transactions_to"
+    )
     date = models.DateField(auto_now_add=True)
     time = models.TimeField(auto_now_add=True)
-    from_currency = models.CharField(max_length=3, null=False, blank=False)
-    to_currency = models.CharField(max_length=3, null=False, blank=False)
+    from_currency = models.CharField(
+        max_length=3, null=False, blank=False, choices=CURRENCY_CHOICES
+    )
+    to_currency = models.CharField(
+        max_length=3, null=False, blank=False, choices=CURRENCY_CHOICES
+    )
     initial_amount = models.FloatField(null=False, blank=False)
     converted_amount = models.FloatField(null=False, blank=False)
     multiply_by = models.FloatField(null=True)
