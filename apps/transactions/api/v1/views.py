@@ -9,10 +9,13 @@ from apps.transactions.api.v1.serializers import (
 from apps.transactions.models import (
     Transaction
 )
+from apps.transactions.api.v1.services import (
+    ExportServices
+)
 from apps.transactions.models import Account
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-
+from django.core.mail import send_mail
 # Create your views here.
 
 
@@ -26,6 +29,7 @@ class AccountAPIView(APIView):
 
     def post(self, request):
         try:
+            send_mail(subject='hghhgh', message='fhhfh', from_email='mustafamunir10@gmail.com', recipient_list=['munir4303324@cloud.neduet.edu.pk'])
             user = request.user
             serializer = self.get_serializer()
             serializer = serializer(data=request.data)
@@ -87,5 +91,20 @@ class TransactionsAPIView(APIView, PageNumberPagination):
                     "page_range": list(range(1, self.page.paginator.num_pages + 1))
                 }
             return success_response(data=response_data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+
+class ExportAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        try:
+            transactions = Transaction.objects.all()
+            serializer = TransactionSerializer(transactions, many=True)
+            ExportServices.export_all(serialized_data=serializer.data)
+            return success_response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
