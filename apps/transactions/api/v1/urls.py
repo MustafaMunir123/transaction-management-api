@@ -2,6 +2,7 @@ from django.urls import path
 from apps.transactions.api.v1.views import (
     AccountAPIView,
     TransactionsAPIView,
+    CurrencyAPIView,
     ExportAPIView
 )
 
@@ -10,5 +11,6 @@ urlpatterns = [
     path("create/", TransactionsAPIView.as_view()),
     path("all/details/", TransactionsAPIView.as_view()),
     path("<int:pk>/details/", TransactionsAPIView.as_view()),
-    path("export/all/", ExportAPIView.as_view())
+    path("export/all/", ExportAPIView.as_view()),
+    path('currency/all/', CurrencyAPIView.as_view())
 ]

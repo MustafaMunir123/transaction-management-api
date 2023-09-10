@@ -5,9 +5,11 @@ from datetime import datetime
 from apps.transactions.api.v1.serializers import (
     TransactionSerializer,
     AccountSerializer,
+    CurrencySerializer
 )
 from apps.transactions.models import (
-    Transaction
+    Transaction,
+    Currency
 )
 from apps.transactions.api.v1.services import (
     ExportServices
@@ -16,7 +18,6 @@ from apps.transactions.models import Account
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from django.core.mail import send_mail
-# Create your views here.
 
 
 class AccountAPIView(APIView):
@@ -105,6 +106,25 @@ class ExportAPIView(APIView):
             transactions = Transaction.objects.all()
             serializer = TransactionSerializer(transactions, many=True)
             ExportServices.export_all(serialized_data=serializer.data)
+            return success_response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+
+class CurrencyAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    @staticmethod
+    def get_serializer():
+        return CurrencySerializer
+
+    def get(self, request):
+        try:
+            currencies = Currency.objects.all()
+            serializer = self.get_serializer()
+            serializer = serializer(currencies, many=True)
             return success_response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex

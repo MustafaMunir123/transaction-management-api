@@ -41,3 +41,14 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.to_account}  {self.from_account}"
+
+
+class Currency(models.Model):
+    objects = None
+    short = models.CharField(max_length=3, null=False, blank=False, help_text="Turn On Capslock")
+
+    class Meta:
+        verbose_name_plural = "Currencies"
+
+    def __str__(self):
+        return self.short

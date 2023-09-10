@@ -1,9 +1,14 @@
 from rest_framework import serializers
-from apps.transactions.models import Transaction, Account
+from apps.transactions.models import (
+    Transaction,
+    Account,
+    Currency
+)
 
 
 class TransactionSerializer(serializers.ModelSerializer):
     read_only_fields = ('date', 'time',)
+
     class Meta:
         model = Transaction
         fields = [
@@ -41,3 +46,13 @@ class AccountSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         account = Account.objects.filter(id=instance.id).update(**validated_data)
         return account
+
+
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ['short']
+
+
+
+
