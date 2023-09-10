@@ -9,7 +9,7 @@ _stash = local()
 class CustomAuthenticationBackend(ModelBackend):
     def authenticate(self, request, **credentials):
         ret = None
-        if app_settings.AUTHENTICATION_METHOD == 'email':
+        if app_settings.AUTHENTICATION_METHOD == "email":
             ret = self._authenticate_by_email(**credentials)
         else:
             ret = self._authenticate_by_username(**credentials)
