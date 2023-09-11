@@ -11,6 +11,7 @@ from apps.users.models import CustomUser
 from apps.utils import (
     success_response,
 )
+from apps.transactions.api.v1.urls import router
 from apps.users.functions import get_token_for_user, create_token_for_user
 
 # Create your views here.
@@ -76,6 +77,7 @@ class UserAPIView(APIView):
 
     def get(self, request, pk=None):
         try:
+            print(router.urls)
             serializer = self.get_serializer()
             if pk:
                 user = CustomUser.objects.get(id=pk)
