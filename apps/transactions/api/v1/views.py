@@ -1,5 +1,7 @@
 from rest_framework.views import APIView, status
+from rest_framework.viewsets import ViewSet, ModelViewSet
 from apps.utils import success_response
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from datetime import datetime
 from apps.transactions.api.v1.serializers import (
@@ -43,7 +45,7 @@ class AccountAPIView(APIView):
             raise ex
 
 
-class TransactionsAPIView(APIView, PageNumberPagination):
+class TransactionsAPIView(PageNumberPagination, APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
@@ -72,16 +74,21 @@ class TransactionsAPIView(APIView, PageNumberPagination):
         except Exception as ex:
             raise ex
 
+    # @action(detail=False, methods=["GET"])
     def get(self, request, pk=None):
         try:
             serializer = self.get_serializer()
             if pk:
-                user = Transaction.objects.get(id=pk)
+                user = Transaction.objects.get(entry_no=pk)
                 serializer = serializer(user)
                 response_data = serializer.data
             else:
-                queryset = Transaction.objects.filter(date=datetime.today().date()).order_by('time').values()
+                date = request.GET.get("date", None)
+                if not date:
+                    raise ValueError("Date not provided, must provide date param")
+                queryset = Transaction.objects.filter(date=date).order_by('time').values()
                 self.page_size = 2
+                print()
                 paginated_data = self.paginate_queryset(queryset, request)
                 serializer = serializer(paginated_data, many=True)
                 response_data = {
