@@ -1,9 +1,7 @@
 from rest_framework.views import APIView, status
-from rest_framework.viewsets import ViewSet, ModelViewSet
+from operator import getitem
 from apps.utils import success_response
-from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from datetime import datetime
 from apps.transactions.api.v1.serializers import (
     TransactionSerializer,
     AccountSerializer,
@@ -14,7 +12,9 @@ from apps.transactions.models import (
     Currency
 )
 from apps.transactions.api.v1.services import (
-    ExportServices
+    ExportServices,
+    LedgerServices,
+    TransactionServices
 )
 from apps.transactions.models import Account
 from rest_framework.permissions import IsAuthenticated
@@ -44,6 +44,14 @@ class AccountAPIView(APIView):
         except Exception as ex:
             raise ex
 
+    def get(self, request):
+        try:
+            accounts = Account.objects.all()
+            serializer = self.get_serializer()
+            serializer = serializer(accounts, many=True)
+            return success_response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
 
 class TransactionsAPIView(PageNumberPagination, APIView):
     permission_classes = [IsAuthenticated]
@@ -133,5 +141,32 @@ class CurrencyAPIView(APIView):
             serializer = self.get_serializer()
             serializer = serializer(currencies, many=True)
             return success_response(data=serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+
+class LedgerAPIView(APIView):
+
+    def get(self, request, pk: int):
+        try:
+            account_id = pk
+            account = Account.objects.get(id=account_id)
+            account_serializer = AccountSerializer(account)
+            from_transactions = Transaction.objects.filter(from_account=account_id).order_by("date").order_by("time")
+            to_transactions = Transaction.objects.filter(to_account=account_id).order_by("date").order_by("time")
+            from_serializer = TransactionSerializer(from_transactions, many=True)
+            to_serializer = TransactionSerializer(to_transactions, many=True)
+            debit_credit = LedgerServices.debit_credit(from_serializer.data, to_serializer.data)
+            LedgerServices.calculate_opening_closing(debit_credit=debit_credit)
+            sorted_transactions = TransactionServices.sort_transactions(transactions=
+                                                                        from_serializer.data + to_serializer.data)
+
+            data = {
+                "account": account_serializer.data,
+                "debit_credit": debit_credit,
+                "transactions": sorted_transactions
+            }
+            return success_response(data=data, status=status.HTTP_200_OK)
+
         except Exception as ex:
             raise ex
