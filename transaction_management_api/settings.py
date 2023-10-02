@@ -103,7 +103,7 @@ AUTHENTICATION_METHOD = 'email'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "mydatabase",
+        "NAME": BASE_DIR/"db.sqlite3",
     }
 }
 

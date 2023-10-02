@@ -5,6 +5,12 @@ from apps.transactions.constants import CURRENCY_CHOICES
 # Create your models here.
 
 
+class CurrencyOpening(models.Model):
+    objects = None
+    currency = models.CharField(max_length=3, null=False, blank=False)
+    account = models.ForeignKey('Account', on_delete=models.CASCADE, related_name='currency_openings')
+
+
 class Account(models.Model):
     objects = None
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="accounts")

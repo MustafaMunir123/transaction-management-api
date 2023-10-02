@@ -1,5 +1,5 @@
+import pandas as pd
 from rest_framework.views import APIView, status
-from operator import getitem
 from apps.utils import success_response
 from rest_framework.pagination import PageNumberPagination
 from apps.transactions.api.v1.serializers import (
@@ -32,7 +32,7 @@ class AccountAPIView(APIView):
 
     def post(self, request):
         try:
-            send_mail(subject='hghhgh', message='fhhfh', from_email='mustafamunir10@gmail.com', recipient_list=['munir4303324@cloud.neduet.edu.pk'])
+            # send_mail(subject='hghhgh', message='fhhfh', from_email='mustafamunir10@gmail.com', recipient_list=['munir4303324@cloud.neduet.edu.pk'])
             user = request.user
             serializer = self.get_serializer()
             serializer = serializer(data=request.data)
@@ -52,6 +52,7 @@ class AccountAPIView(APIView):
             return success_response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
+
 
 class TransactionsAPIView(PageNumberPagination, APIView):
     permission_classes = [IsAuthenticated]
@@ -94,16 +95,20 @@ class TransactionsAPIView(PageNumberPagination, APIView):
                 date = request.GET.get("date", None)
                 if not date:
                     raise ValueError("Date not provided, must provide date param")
-                queryset = Transaction.objects.filter(date=date).order_by('time').values()
+                queryset = Transaction.objects.filter(date=date).order_by('time')
                 self.page_size = 2
-                print()
                 paginated_data = self.paginate_queryset(queryset, request)
                 serializer = serializer(paginated_data, many=True)
+                list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)
+                dataframe = pd.DataFrame(list_of_dict)
+                dataframe = ExportServices.order_columns(dataframe=dataframe)
+                data_dict = dataframe.to_dict('records')
+
                 response_data = {
                     "count": self.page.paginator.count,
                     "next": self.get_next_link(),
                     "previous": self.get_previous_link(),
-                    "results": serializer.data,
+                    "results": data_dict,
                     "page_range": list(range(1, self.page.paginator.num_pages + 1))
                 }
             return success_response(data=response_data, status=status.HTTP_200_OK)
@@ -120,8 +125,9 @@ class ExportAPIView(APIView):
         try:
             transactions = Transaction.objects.all()
             serializer = TransactionSerializer(transactions, many=True)
-            ExportServices.export_all(serialized_data=serializer.data)
-            return success_response(data=serializer.data, status=status.HTTP_200_OK)
+            list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)
+            ExportServices().export_all(serialized_data=list_of_dict)
+            return success_response(data={"message": "File Generated"}, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
 
