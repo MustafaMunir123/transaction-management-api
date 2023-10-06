@@ -19,6 +19,7 @@ urlpatterns = [
     path("all/details/", TransactionsAPIView.as_view()),
     path("<int:pk>/details/", TransactionsAPIView.as_view()),
     path("export/all/", ExportAPIView.as_view()),
+    path("export/<int:pk>/ledger/", ExportAPIView.as_view()),
     path('currency/all/', CurrencyAPIView.as_view()),
     path('<int:pk>/ledger/', LedgerAPIView.as_view())
 ]

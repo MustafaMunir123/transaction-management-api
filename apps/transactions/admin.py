@@ -2,7 +2,8 @@ from django.contrib import admin
 from apps.transactions.models import (
     Account,
     Transaction,
-    Currency
+    Currency,
+    CurrencyOpening
 )
 
 
@@ -21,6 +22,12 @@ class CurrencyAdmin(admin.ModelAdmin):
     list_display = ["short"]
 
 
+class CurrencyOpeningAdmin(admin.ModelAdmin):
+    search_fields = ["account"]
+    list_display = ["account"]
+
+
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Currency, CurrencyAdmin)
+admin.site.register(CurrencyOpening, CurrencyOpeningAdmin)
