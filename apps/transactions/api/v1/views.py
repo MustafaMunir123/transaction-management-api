@@ -1,6 +1,7 @@
 import pandas as pd
 from rest_framework.views import APIView, status
 from apps.utils import success_response
+from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
 from apps.transactions.api.v1.serializers import (
     TransactionSerializer,
@@ -19,7 +20,6 @@ from apps.transactions.api.v1.services import (
 from apps.transactions.models import Account
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from django.core.mail import send_mail
 
 
 class AccountAPIView(APIView):
@@ -32,7 +32,6 @@ class AccountAPIView(APIView):
 
     def post(self, request):
         try:
-            # send_mail(subject='hghhgh', message='fhhfh', from_email='mustafamunir10@gmail.com', recipient_list=['munir4303324@cloud.neduet.edu.pk'])
             user = request.user
             serializer = self.get_serializer()
             serializer = serializer(data=request.data)
@@ -64,6 +63,7 @@ class TransactionsAPIView(PageNumberPagination, APIView):
 
     def post(self, request):
         try:
+            # TODO: Add validation checks
             to_account = request.data.pop("to_account", None)
             from_account = request.data.pop("from_account", None)
             to_account_instance = Account.objects.get(id=to_account)
@@ -117,11 +117,11 @@ class TransactionsAPIView(PageNumberPagination, APIView):
 
 
 class ExportAPIView(APIView):
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
-    def get(self, request):
+    @staticmethod
+    def export_all(request):
         try:
             transactions = Transaction.objects.all()
             serializer = TransactionSerializer(transactions, many=True)
@@ -131,9 +131,27 @@ class ExportAPIView(APIView):
         except Exception as ex:
             raise ex
 
+    @staticmethod
+    def export_ledger(request, pk=None):
+        try:
+            data = LedgerAPIView().get(request=request, pk=pk).data
+            ExportServices().export_ledger(data=data["data"])
+            return success_response(data="File Created", status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+    def get(self, request, pk=None):
+        try:
+            if "ledger" in request.path:
+                return self.export_ledger(request=request, pk=pk)
+            else:
+                return self.export_all(request)
+
+        except Exception as ex:
+            raise ex
+
 
 class CurrencyAPIView(APIView):
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
@@ -155,23 +173,22 @@ class LedgerAPIView(APIView):
 
     def get(self, request, pk: int):
         try:
-            account_id = pk
-            account = Account.objects.get(id=account_id)
+            account = Account.objects.get(id=pk)
             account_serializer = AccountSerializer(account)
-            from_transactions = Transaction.objects.filter(from_account=account_id).order_by("date").order_by("time")
-            to_transactions = Transaction.objects.filter(to_account=account_id).order_by("date").order_by("time")
-            from_serializer = TransactionSerializer(from_transactions, many=True)
-            to_serializer = TransactionSerializer(to_transactions, many=True)
-            debit_credit = LedgerServices.debit_credit(from_serializer.data, to_serializer.data)
+            transactions = Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk)).order_by("date").order_by("time")
+            serializer = TransactionSerializer(transactions, many=True)
+            debit_credit = LedgerServices.debit_credit(serializer.data, pk)
             LedgerServices.calculate_opening_closing(debit_credit=debit_credit)
-            sorted_transactions = TransactionServices.sort_transactions(transactions=
-                                                                        from_serializer.data + to_serializer.data)
-
+            sorted_transactions = TransactionServices.sort_transactions(transactions=serializer.data)
+            sorted_transactions = TransactionServices.denormalize_accounts(sorted_transactions)
+            restructured_data = LedgerServices.restructure_data(data_list=sorted_transactions, pk=pk)
             data = {
                 "account": account_serializer.data,
                 "debit_credit": debit_credit,
-                "transactions": sorted_transactions
+                "transactions": restructured_data
             }
+            if request.data["export"]:
+                LedgerServices.create_update_opening(debit_credit, pk)
             return success_response(data=data, status=status.HTTP_200_OK)
 
         except Exception as ex:
