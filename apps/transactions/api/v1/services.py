@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 import pandas as pd
 from typing import Dict, List, OrderedDict
 from operator import itemgetter
@@ -53,9 +54,13 @@ class ExportServices:
             else:
                 edited_columns.append(column)
         transactions_dataframe.columns = edited_columns
-
-        account_dataframe = pd.DataFrame(data["account"], index=[1])
-        account_dataframe.columns = account_dataframe.columns.str.upper()
+        general_info = {
+            "title": data["account"].pop("title"),
+            "date": datetime.today().date(),
+            "time": datetime.today().time()
+        }
+        general_dataframe = pd.DataFrame(general_info, index=[1])
+        general_dataframe.columns = general_dataframe.columns.str.upper()
 
         """
         Generating .xlsx with custom formatting
@@ -63,7 +68,8 @@ class ExportServices:
         workbook = Workbook()
         worksheet = workbook.active
 
-        self.append_to_worksheet(worksheet, transactions_dataframe, 1)
+        row_number = self.append_to_worksheet(worksheet, general_dataframe, 1)
+        self.append_to_worksheet(worksheet, transactions_dataframe, row_number)
 
         workbook.save("./templates/transactions/ledger.xlsx")
 
