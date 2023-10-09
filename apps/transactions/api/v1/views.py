@@ -43,11 +43,15 @@ class AccountAPIView(APIView):
         except Exception as ex:
             raise ex
 
-    def get(self, request):
+    def get(self, request, pk=None):
         try:
-            accounts = Account.objects.all()
             serializer = self.get_serializer()
-            serializer = serializer(accounts, many=True)
+            if pk:
+                accounts = Account.objects.get(id=pk)
+                serializer = serializer(accounts, many=False)
+            else:
+                accounts = Account.objects.all()
+                serializer = serializer(accounts, many=True)
             return success_response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
