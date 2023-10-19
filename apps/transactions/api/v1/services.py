@@ -1,3 +1,4 @@
+import os
 import json
 from datetime import datetime
 import pandas as pd
@@ -17,6 +18,7 @@ from openpyxl.styles import Font
 
 
 class ExportServices:
+    download_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 
     def export_all(self, serialized_data: List[Dict]) -> None:
         df = pd.DataFrame(serialized_data)
@@ -38,14 +40,14 @@ class ExportServices:
             worksheet.append(row)
         for cell in worksheet[1]:
             cell.font = Font(bold=True)
-        workbook.save("./templates/transactions/test.xlsx")
+        workbook.save(f"{self.download_path}/transactions.xlsx")
 
     @staticmethod
     def order_columns(dataframe):
         column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency', 'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id', 'to_account_title', 'narration']
         return dataframe[column_order]
 
-    def export_ledger(self, data):
+    def export_ledger(self, data) -> None:
         transactions_dataframe = pd.DataFrame(data["transactions"])
         edited_columns = []
         for column in transactions_dataframe.columns:
@@ -71,7 +73,7 @@ class ExportServices:
         row_number = self.append_to_worksheet(worksheet, general_dataframe, 1)
         self.append_to_worksheet(worksheet, transactions_dataframe, row_number)
 
-        workbook.save("./templates/transactions/ledger.xlsx")
+        workbook.save(f"{self.download_path}/ledger.xlsx")
 
     @staticmethod
     def append_to_worksheet(worksheet, dataframe, row_number, index=False):
