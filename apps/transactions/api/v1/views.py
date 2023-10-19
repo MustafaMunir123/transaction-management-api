@@ -144,7 +144,7 @@ class ExportAPIView(APIView):
         except Exception as ex:
             raise ex
 
-    def post(self, request, pk=None):
+    def get(self, request, pk=None):
         try:
             if "ledger" in request.path:
                 return self.export_ledger(request=request, pk=pk)
@@ -175,7 +175,7 @@ class CurrencyAPIView(APIView):
 
 class LedgerAPIView(APIView):
 
-    def post(self, request, pk: int):
+    def get(self, request, pk: int):
         try:
             account = Account.objects.get(id=pk)
             account_serializer = AccountSerializer(account)
