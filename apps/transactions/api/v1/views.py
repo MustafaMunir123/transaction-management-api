@@ -10,7 +10,8 @@ from apps.transactions.api.v1.serializers import (
 )
 from apps.transactions.models import (
     Transaction,
-    Currency
+    Currency,
+CurrencyOpening
 )
 from apps.transactions.api.v1.services import (
     ExportServices,
@@ -205,5 +206,10 @@ class LedgerAPIView(APIView):
 class TransactionNumber(APIView):
 
     def get(self, request):
-        last_object = Transaction.objects.last()
-        return success_response(data={"entry_no": last_object.entry_no}, status=status.HTTP_200_OK)
+        try:
+            last_object = Transaction.objects.last()
+            if last_object:
+                return success_response(data={"entry_no": last_object.entry_no}, status=status.HTTP_200_OK)
+            return success_response(data={"entry_no": 1}, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
