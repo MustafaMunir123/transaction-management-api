@@ -68,21 +68,24 @@ class TransactionsAPIView(PageNumberPagination, APIView):
     def post(self, request):
         try:
             # TODO: Add validation checks
-            to_account = request.data.pop("to_account", None)
-            from_account = request.data.pop("from_account", None)
-            to_account_instance = Account.objects.get(id=to_account)
-            from_account_instance = Account.objects.get(id=from_account)
-            serializer = self.get_serializer()
-            serializer = serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(
-                to_account=to_account_instance, from_account=from_account_instance
-            )
-            serializer.validated_data["to_account"] = to_account_instance.title
-            serializer.validated_data["from_account"] = from_account_instance.title
-            serializer.validated_data["entry_no"] = serializer.data["entry_no"]
+            complete_records = []
+            for record in request.data["transactions"]:
+                to_account = record.pop("to_account", None)
+                from_account = record.pop("from_account", None)
+                to_account_instance = Account.objects.get(id=to_account)
+                from_account_instance = Account.objects.get(id=from_account)
+                serializer = self.get_serializer()
+                serializer = serializer(data=record)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(
+                    to_account=to_account_instance, from_account=from_account_instance
+                )
+                serializer.validated_data["to_account"] = to_account_instance.title
+                serializer.validated_data["from_account"] = from_account_instance.title
+                serializer.validated_data["entry_no"] = serializer.data["entry_no"]
+                complete_records.append(serializer.validated_data)
             return success_response(
-                data=serializer.validated_data, status=status.HTTP_200_OK
+                data=complete_records, status=status.HTTP_200_OK
             )
         except Exception as ex:
             raise ex
