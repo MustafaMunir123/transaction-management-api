@@ -42,7 +42,7 @@ class Account(models.Model):
 
 class Transaction(models.Model):
     objects = None
-    entry_no = models.BigAutoField(primary_key=True, auto_created=True, serialize=False)
+    entry_no = models.IntegerField(auto_created=False, primary_key=True)
     from_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions_from")
     to_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions_to")
     date = models.DateField(auto_now_add=True)
