@@ -197,3 +197,10 @@ class LedgerAPIView(APIView):
 
         except Exception as ex:
             raise ex
+
+
+class TransactionNumber(APIView):
+
+    def get(self, request):
+        last_object = Transaction.objects.last()
+        return success_response(data={"entry_no": last_object.entry_no}, status=status.HTTP_200_OK)

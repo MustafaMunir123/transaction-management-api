@@ -28,7 +28,6 @@ EXPORT_LEDGER = {
     "date": "DATE",
     "title": "TITLE",
     "currency": "CURRENCY",
-    "debit_amount": "DEBIT AMOUNT",
-    "credit_amount": "CREDIT AMOUNT",
+    "amount": "AMOUNT",
     "narration": "NARRATION"
 }

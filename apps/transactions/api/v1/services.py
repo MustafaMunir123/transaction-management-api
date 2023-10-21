@@ -147,16 +147,15 @@ class LedgerServices:
                 "date": data["date"],
                 "title": "",
                 "currency": "",
-                "debit_amount": 0,
-                "credit_amount": 0,
+                "amount": 0,
                 "narration": data["narration"]
             }
             if data["from_account_id"] == pk:
-                record["debit_amount"] = data["initial_amount"]
+                record["amount"] = data["initial_amount"]
                 record["currency"] = data["from_currency"]
                 record["title"] = data["to_account_title"]
             else:
-                record["credit_amount"] = data["converted_amount"]
+                record["amount"] = -1*data["converted_amount"]
                 record["currency"] = data["to_currency"]
                 record["title"] = data["from_account_title"]
 
