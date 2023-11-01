@@ -11,7 +11,6 @@ from apps.transactions.api.v1.serializers import (
 from apps.transactions.models import (
     Transaction,
     Currency,
-CurrencyOpening
 )
 from apps.transactions.api.v1.services import (
     ExportServices,
