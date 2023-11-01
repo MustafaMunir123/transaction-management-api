@@ -47,7 +47,7 @@ class TransactionSerializer(serializers.ModelSerializer):
         return Transaction.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        transaction = Transaction.objects.filter(id=instance.id).update(
+        transaction = Transaction.objects.filter(entry_no=instance.entry_no).update(
             **validated_data
         )
         return transaction

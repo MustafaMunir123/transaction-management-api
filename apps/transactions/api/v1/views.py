@@ -11,7 +11,6 @@ from apps.transactions.api.v1.serializers import (
 from apps.transactions.models import (
     Transaction,
     Currency,
-CurrencyOpening
 )
 from apps.transactions.api.v1.services import (
     ExportServices,
@@ -120,6 +119,18 @@ class TransactionsAPIView(PageNumberPagination, APIView):
                     "page_range": list(range(1, self.page.paginator.num_pages + 1))
                 }
             return success_response(data=response_data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+    def patch(self, request):
+        transactions = request.data.get('transactions', [])
+        try:
+            for transaction in transactions:
+                transaction_object = Transaction.objects.get(entry_no=transaction.pop("entry_no"))
+                serializer = TransactionSerializer(transaction_object, data=transaction, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            return success_response(data={"message": "updated successfully"}, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
 

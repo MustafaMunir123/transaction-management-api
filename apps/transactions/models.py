@@ -1,5 +1,3 @@
-from importlib._common import _
-
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
@@ -53,8 +51,6 @@ class Transaction(models.Model):
     converted_amount = models.FloatField(null=False, blank=False)
     multiply_by = models.FloatField(null=False)
     divide_by = models.FloatField(null=False)
-    pre_date = models.DateField(auto_now_add=True)
-    pre_time = models.TimeField(auto_now_add=True)
     narration = models.TextField(null=False, blank=False, max_length=200)
     is_valid = models.BooleanField(default=True, null=False)
 
