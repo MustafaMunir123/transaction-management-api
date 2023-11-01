@@ -19,6 +19,7 @@ urlpatterns = [
     path("account/all/", AccountAPIView.as_view()),
     url("", include(router.urls)),
     path("create/", TransactionsAPIView.as_view()),
+    path("update/", TransactionsAPIView.as_view()),
     path("all/details/", TransactionsAPIView.as_view()),
     path("<int:pk>/details/", TransactionsAPIView.as_view()),
     path("export/all/", ExportAPIView.as_view()),

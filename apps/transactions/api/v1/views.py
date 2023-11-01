@@ -122,6 +122,18 @@ class TransactionsAPIView(PageNumberPagination, APIView):
         except Exception as ex:
             raise ex
 
+    def patch(self, request):
+        transactions = request.data.get('transactions', [])
+        try:
+            for transaction in transactions:
+                transaction_object = Transaction.objects.get(entry_no=transaction.pop("entry_no"))
+                serializer = TransactionSerializer(transaction_object, data=transaction, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            return success_response(data={"message": "updated successfully"}, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
 
 class ExportAPIView(APIView):
     permission_classes = [IsAuthenticated]
