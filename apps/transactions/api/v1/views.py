@@ -103,7 +103,7 @@ class TransactionsAPIView(PageNumberPagination, APIView):
                 if not date:
                     raise ValueError("Date not provided, must provide date param")
                 queryset = Transaction.objects.filter(date=date).order_by('time')
-                self.page_size = 2
+                self.page_size = 100
                 paginated_data = self.paginate_queryset(queryset, request)
                 serializer = serializer(paginated_data, many=True)
                 list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)

@@ -44,7 +44,7 @@ class ExportServices:
 
     @staticmethod
     def order_columns(dataframe):
-        column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency', 'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id', 'to_account_title', 'narration']
+        column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency', 'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id', 'to_account_title', 'narration', 'is_valid']
         return dataframe[column_order]
 
     def export_ledger(self, data) -> None:
