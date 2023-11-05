@@ -10,9 +10,13 @@ from apps.transactions.models import (
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ["id", "title", "note"]
+        fields = ["id", "title", "note", "full_name", "mobile_1", "mobile_2", "address", "company_name"]
 
     def create(self, validated_data):
+        mobile_1 = validated_data.get("mobile_1")
+        mobile_2 = validated_data.get("mobile_2")
+        if mobile_1 == mobile_2:
+            raise ValueError("error: mobile_1, mobile_2 can't be same")
         return Account.objects.create(**validated_data)
 
     def update(self, instance, validated_data):

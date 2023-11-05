@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.users.models import CustomUser
 from apps.transactions.constants import CURRENCY_CHOICES
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 # Create your models here.
@@ -24,9 +25,14 @@ class CurrencyOpening(models.Model):
 
 class Account(models.Model):
     objects = None
+    full_name = models.CharField(max_length=150, null=False, blank=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="accounts")
     title = models.CharField(max_length=100, null=False, blank=False, unique=True)
-    note = models.TextField(max_length=200, null=True)
+    note = models.TextField(max_length=200, null=False)
+    mobile_1 = PhoneNumberField(null=False, unique=True)
+    mobile_2 = PhoneNumberField(null=True, unique=True)
+    address = models.CharField(max_length=300, null=True)
+    company_name = models.CharField(max_length=200, null=True)
 
     def __str__(self):
         return f"{self.title}  {self.note}"

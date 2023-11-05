@@ -43,6 +43,7 @@ DEFAULT_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'phonenumber_field'
 ]
 
 LOCAL_APPS = [
