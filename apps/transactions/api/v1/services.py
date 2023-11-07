@@ -140,24 +140,31 @@ class LedgerServices:
                 debit_credit[key]["opening"] = 0
 
     @staticmethod
-    def restructure_data(data_list: List, pk: int) -> List:
+    def restructure_data(data_list: List, pk: int, debit_credit) -> List:
         records = []
+        duplicate_dict = dict(debit_credit)
         for data in data_list:
             record = {
                 "date": data["date"],
                 "title": "",
                 "currency": "",
-                "amount": 0,
-                "narration": data["narration"]
+                "debit_amount": 0,
+                "credit_amount": 0,
+                "narration": data["narration"],
+                "balance": 0
             }
             if data["from_account_id"] == pk:
-                record["amount"] = data["initial_amount"]
+                record["debit_amount"] = data["initial_amount"]
                 record["currency"] = data["from_currency"]
                 record["title"] = data["to_account_title"]
+                duplicate_dict[record["currency"]]["opening"] += record["debit_amount"]
+                record["balance"] = duplicate_dict[record["currency"]]["opening"]
             else:
-                record["amount"] = -1*data["converted_amount"]
+                record["credit_amount"] = data["converted_amount"]
                 record["currency"] = data["to_currency"]
                 record["title"] = data["from_account_title"]
+                duplicate_dict[record["currency"]]["opening"] -= record["credit_amount"]
+                record["balance"] = duplicate_dict[record["currency"]]["opening"]
 
             records.append(record)
         return records

@@ -200,7 +200,7 @@ class LedgerAPIView(APIView):
             LedgerServices.calculate_opening_closing(debit_credit=debit_credit)
             sorted_transactions = TransactionServices.sort_transactions(transactions=serializer.data)
             sorted_transactions = TransactionServices.denormalize_accounts(sorted_transactions)
-            restructured_data = LedgerServices.restructure_data(data_list=sorted_transactions, pk=pk)
+            restructured_data = LedgerServices.restructure_data(data_list=sorted_transactions, pk=pk, debit_credit=debit_credit)
             data = {
                 "account": account_serializer.data,
                 "debit_credit": debit_credit,
