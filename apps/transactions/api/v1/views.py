@@ -1,3 +1,5 @@
+import datetime
+
 import pandas as pd
 from rest_framework.views import APIView, status
 from apps.utils import success_response
@@ -100,9 +102,10 @@ class TransactionsAPIView(PageNumberPagination, APIView):
                 response_data = serializer.data
             else:
                 date = request.GET.get("date", None)
+                today_date = datetime.datetime.today().date()
                 if not date:
                     raise ValueError("Date not provided, must provide date param")
-                queryset = Transaction.objects.filter(date=date).order_by('time')
+                queryset = Transaction.objects.filter(date__range=[date, today_date]).order_by('time')
                 self.page_size = 100
                 paginated_data = self.paginate_queryset(queryset, request)
                 serializer = serializer(paginated_data, many=True)
@@ -194,7 +197,7 @@ class LedgerAPIView(APIView):
         try:
             account = Account.objects.get(id=pk)
             account_serializer = AccountSerializer(account)
-            transactions = Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk)).order_by("date").order_by("time")
+            transactions = Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk), is_valid=True).order_by("date").order_by("time")
             serializer = TransactionSerializer(transactions, many=True)
             debit_credit = LedgerServices.debit_credit(serializer.data, pk)
             LedgerServices.calculate_opening_closing(debit_credit=debit_credit)
