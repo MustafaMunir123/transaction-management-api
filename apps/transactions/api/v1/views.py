@@ -92,7 +92,52 @@ class TransactionsAPIView(PageNumberPagination, APIView):
         except Exception as ex:
             raise ex
 
-    # @action(detail=False, methods=["GET"])
+    def get(self, request, pk=None):
+        try:
+            serializer = self.get_serializer()
+            if pk:
+                user = Transaction.objects.get(entry_no=pk)
+                serializer = serializer(user)
+                response_data = serializer.data
+            else:
+                date = request.GET.get("date", None)
+                today_date = datetime.datetime.today().date()
+                if not date:
+                    raise ValueError("Date not provided, must provide date param")
+                queryset = Transaction.objects.filter(date__range=[date, today_date]).order_by('time')
+                self.page_size = 100
+                # paginated_data = self.paginate_queryset(queryset, request)
+                serializer = serializer(queryset, many=True)
+                list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)
+                dataframe = pd.DataFrame(list_of_dict)
+                dataframe = ExportServices.order_columns(dataframe=dataframe)
+                data_dict = dataframe.to_dict('records')
+
+                # "count": self.page.paginator.count,
+                # "next": self.get_next_link(),
+                # "previous": self.get_previous_link(),
+                # "page_range": list(range(1, self.page.paginator.num_pages + 1))
+                response_data = {
+                    "results": data_dict,
+                }
+            return success_response(data=response_data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+    def patch(self, request):
+        transactions = request.data.get('transactions', [])
+        try:
+            for transaction in transactions:
+                transaction_object = Transaction.objects.get(entry_no=transaction.pop("entry_no"))
+                serializer = TransactionSerializer(transaction_object, data=transaction, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            return success_response(data={"message": "updated successfully"}, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+
+"""    
     def get(self, request, pk=None):
         try:
             serializer = self.get_serializer()
@@ -124,18 +169,7 @@ class TransactionsAPIView(PageNumberPagination, APIView):
             return success_response(data=response_data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
-
-    def patch(self, request):
-        transactions = request.data.get('transactions', [])
-        try:
-            for transaction in transactions:
-                transaction_object = Transaction.objects.get(entry_no=transaction.pop("entry_no"))
-                serializer = TransactionSerializer(transaction_object, data=transaction, partial=True)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-            return success_response(data={"message": "updated successfully"}, status=status.HTTP_200_OK)
-        except Exception as ex:
-            raise ex
+"""
 
 
 class ExportAPIView(APIView):
@@ -197,13 +231,15 @@ class LedgerAPIView(APIView):
         try:
             account = Account.objects.get(id=pk)
             account_serializer = AccountSerializer(account)
-            transactions = Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk), is_valid=True).order_by("date").order_by("time")
+            transactions = Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk), is_valid=True).order_by(
+                "date").order_by("time")
             serializer = TransactionSerializer(transactions, many=True)
             debit_credit = LedgerServices.debit_credit(serializer.data, pk)
             LedgerServices.calculate_opening_closing(debit_credit=debit_credit)
             sorted_transactions = TransactionServices.sort_transactions(transactions=serializer.data)
             sorted_transactions = TransactionServices.denormalize_accounts(sorted_transactions)
-            restructured_data = LedgerServices.restructure_data(data_list=sorted_transactions, pk=pk, debit_credit=debit_credit)
+            restructured_data = LedgerServices.restructure_data(data_list=sorted_transactions, pk=pk,
+                                                                debit_credit=debit_credit)
             data = {
                 "account": account_serializer.data,
                 "debit_credit": debit_credit,
