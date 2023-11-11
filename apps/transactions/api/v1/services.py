@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 from datetime import datetime
 import pandas as pd
 from typing import Dict, List, OrderedDict
@@ -140,9 +141,10 @@ class LedgerServices:
                 debit_credit[key]["opening"] = 0
 
     @staticmethod
-    def restructure_data(data_list: List, pk: int, debit_credit) -> List:
+    def restructure_data(data_list: List, pk: int, debit_credit: Dict) -> List:
         records = []
-        duplicate_dict = dict(debit_credit)
+
+        duplicate_dict = copy.deepcopy(debit_credit)
         for data in data_list:
             record = {
                 "date": data["date"],
