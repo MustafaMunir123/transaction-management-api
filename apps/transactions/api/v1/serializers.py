@@ -44,7 +44,8 @@ class TransactionSerializer(serializers.ModelSerializer):
             "is_valid",
             "from_account",
             "to_account",
-            "time"
+            "time",
+            "is_archived"
         ]
 
     def create(self, validated_data):

@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 from datetime import datetime
 import pandas as pd
 from typing import Dict, List, OrderedDict
@@ -21,7 +22,11 @@ class ExportServices:
     download_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 
     def export_all(self, serialized_data: List[Dict]) -> None:
+        if not serialized_data:
+            raise ValueError("No new transactions made.")
         df = pd.DataFrame(serialized_data)
+        print(df.columns)
+        df.drop(columns=["is_archived", "is_valid"])
         df = self.order_columns(dataframe=df)
         edited_columns = []
         for column in df.columns:
@@ -44,7 +49,9 @@ class ExportServices:
 
     @staticmethod
     def order_columns(dataframe):
-        column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency', 'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id', 'to_account_title', 'narration', 'is_valid', 'date']
+        column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency',
+                        'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id',
+                        'to_account_title', 'narration', 'date']
         return dataframe[column_order]
 
     def export_ledger(self, data) -> None:
@@ -96,6 +103,13 @@ class TransactionServices:
         return transactions
 
     @staticmethod
+    def order_columns(dataframe):
+        column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency',
+                        'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id',
+                        'to_account_title', 'narration', 'is_valid', 'date']
+        return dataframe[column_order]
+
+    @staticmethod
     def denormalize_accounts(serialized_data: List[OrderedDict]) -> List:
         list_of_dict = json.loads(json.dumps(serialized_data))
         for data in list_of_dict:
@@ -140,9 +154,10 @@ class LedgerServices:
                 debit_credit[key]["opening"] = 0
 
     @staticmethod
-    def restructure_data(data_list: List, pk: int, debit_credit) -> List:
+    def restructure_data(data_list: List, pk: int, debit_credit: Dict) -> List:
         records = []
-        duplicate_dict = dict(debit_credit)
+
+        duplicate_dict = copy.deepcopy(debit_credit)
         for data in data_list:
             record = {
                 "date": data["date"],
@@ -170,7 +185,7 @@ class LedgerServices:
         return records
 
     @staticmethod
-    def create_update_opening(opening_closing: Dict, pk:int) -> None:
+    def create_update_opening(opening_closing: Dict, pk: int) -> None:
         for currency in opening_closing.keys():
             if CurrencyOpening.objects.filter(currency=currency, account=pk).exists():
                 obj = CurrencyOpening.objects.get(currency=currency, account=pk)
@@ -180,5 +195,8 @@ class LedgerServices:
                 account = Account.objects.get(id=pk)
                 obj = CurrencyOpening.objects.create(currency=currency, account=account, opening=opening_closing[currency]["closing"])
                 obj.save()
+
+
+# class SummaryServices:
 
 

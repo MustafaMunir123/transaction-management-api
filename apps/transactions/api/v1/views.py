@@ -17,7 +17,7 @@ from apps.transactions.models import (
 from apps.transactions.api.v1.services import (
     ExportServices,
     LedgerServices,
-    TransactionServices
+    TransactionServices,
 )
 from apps.transactions.models import Account
 from rest_framework.permissions import IsAuthenticated
@@ -96,21 +96,23 @@ class TransactionsAPIView(PageNumberPagination, APIView):
         try:
             serializer = self.get_serializer()
             if pk:
-                user = Transaction.objects.get(entry_no=pk)
-                serializer = serializer(user)
+                transaction = Transaction.objects.get(entry_no=pk, is_archived=False)
+                serializer = serializer(transaction)
                 response_data = serializer.data
             else:
                 date = request.GET.get("date", None)
                 today_date = datetime.datetime.today().date()
                 if not date:
                     raise ValueError("Date not provided, must provide date param")
-                queryset = Transaction.objects.filter(date__range=[date, today_date]).order_by('time')
+                queryset = Transaction.objects.filter(date__range=[date, today_date], is_archived=False).order_by('time')
                 self.page_size = 100
                 # paginated_data = self.paginate_queryset(queryset, request)
                 serializer = serializer(queryset, many=True)
                 list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)
+                if not list_of_dict:
+                    raise ValueError("No transactions.")
                 dataframe = pd.DataFrame(list_of_dict)
-                dataframe = ExportServices.order_columns(dataframe=dataframe)
+                dataframe = TransactionServices.order_columns(dataframe=dataframe)
                 data_dict = dataframe.to_dict('records')
 
                 # "count": self.page.paginator.count,
@@ -177,17 +179,6 @@ class ExportAPIView(APIView):
     authentication_classes = [TokenAuthentication]
 
     @staticmethod
-    def export_all(request):
-        try:
-            transactions = Transaction.objects.all()
-            serializer = TransactionSerializer(transactions, many=True)
-            list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)
-            ExportServices().export_all(serialized_data=list_of_dict)
-            return success_response(data={"message": "File Generated"}, status=status.HTTP_200_OK)
-        except Exception as ex:
-            raise ex
-
-    @staticmethod
     def export_ledger(request, pk=None):
         try:
             data = LedgerAPIView().get(request=request, pk=pk).data
@@ -200,8 +191,8 @@ class ExportAPIView(APIView):
         try:
             if "ledger" in request.path:
                 return self.export_ledger(request=request, pk=pk)
-            else:
-                return self.export_all(request)
+            # else:
+            #     return self.export_all(request)
 
         except Exception as ex:
             raise ex
@@ -231,8 +222,8 @@ class LedgerAPIView(APIView):
         try:
             account = Account.objects.get(id=pk)
             account_serializer = AccountSerializer(account)
-            transactions = Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk), is_valid=True).order_by(
-                "date").order_by("time")
+            transactions = Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk), is_valid=True,
+                                                      is_archived=False).order_by("date").order_by("time")
             serializer = TransactionSerializer(transactions, many=True)
             debit_credit = LedgerServices.debit_credit(serializer.data, pk)
             LedgerServices.calculate_opening_closing(debit_credit=debit_credit)
@@ -245,8 +236,8 @@ class LedgerAPIView(APIView):
                 "debit_credit": debit_credit,
                 "transactions": restructured_data
             }
-            if request.data["export"]:
-                LedgerServices.create_update_opening(debit_credit, pk)
+            # if request.data["export"]:
+            #     LedgerServices.create_update_opening(debit_credit, pk)
             return success_response(data=data, status=status.HTTP_200_OK)
 
         except Exception as ex:
@@ -260,6 +251,47 @@ class TransactionNumber(APIView):
             last_object = Transaction.objects.last()
             if last_object:
                 return success_response(data={"entry_no": last_object.entry_no}, status=status.HTTP_200_OK)
-            return success_response(data={"entry_no": 1}, status=status.HTTP_200_OK)
+            return success_response(data={"entry_no": 0}, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+
+class SummaryAPIView(APIView):
+
+    @staticmethod
+    def export_all(pk_list):
+        try:
+            transactions = Transaction.objects.filter(Q(from_account__in=pk_list) | Q(to_account__in=pk_list),
+                                                      is_valid=True, is_archived=False).order_by("date").order_by("time")
+            serializer = TransactionSerializer(transactions, many=True)
+            list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)
+            ExportServices().export_all(serialized_data=list_of_dict)
+
+            return success_response(data={"message": "File Generated"}, status=status.HTTP_200_OK)
+        except Exception as ex:
+            raise ex
+
+    def get(self, request):
+        try:
+            data_list = []
+            pk_list = []
+            export = request.data.get("export")
+            accounts = Account.objects.filter()
+            account_serializer = AccountSerializer(accounts, many=True)
+            for account in account_serializer.data:
+                pk = account["id"]
+                data = LedgerAPIView().get(request=request, pk=pk).data
+                data["data"].pop("transactions")
+                if export:
+                    LedgerServices.create_update_opening(data["data"]["debit_credit"], pk)
+                pk_list.append(pk)
+                data_list.append(data["data"])
+            if export:
+                print("che")
+                self.export_all(pk_list)
+                transactions = Transaction.objects.filter(Q(from_account__in=pk_list) | Q(to_account__in=pk_list), is_valid=True,
+                                                          is_archived=False).order_by("date").order_by("time")
+                transactions.update(is_archived=True)
+            return success_response(data=data_list, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
