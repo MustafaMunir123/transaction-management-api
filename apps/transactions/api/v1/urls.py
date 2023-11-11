@@ -7,7 +7,8 @@ from apps.transactions.api.v1.views import (
     CurrencyAPIView,
     ExportAPIView,
     LedgerAPIView,
-    TransactionNumber
+    TransactionNumber,
+    SummaryAPIView
 )
 router = DefaultRouter()
 
@@ -26,5 +27,6 @@ urlpatterns = [
     path("export/<int:pk>/ledger/", ExportAPIView.as_view()),
     path('currency/all/', CurrencyAPIView.as_view()),
     path('<int:pk>/ledger/', LedgerAPIView.as_view()),
-    path('entry-no/', TransactionNumber.as_view())
+    path('entry-no/', TransactionNumber.as_view()),
+    path('summary/', SummaryAPIView.as_view())
 ]

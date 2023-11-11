@@ -59,6 +59,7 @@ class Transaction(models.Model):
     divide_by = models.FloatField(null=False)
     narration = models.TextField(null=False, blank=False, max_length=200)
     is_valid = models.BooleanField(default=True, null=False)
+    is_archived = models.BooleanField(default=False, null=True)
 
     def __str__(self):
         return f"{self.to_account}  {self.from_account}"
