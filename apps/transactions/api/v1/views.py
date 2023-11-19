@@ -1,5 +1,4 @@
 import datetime
-
 import pandas as pd
 from rest_framework.views import APIView, status
 from apps.utils import success_response
@@ -9,6 +8,10 @@ from apps.transactions.api.v1.serializers import (
     TransactionSerializer,
     AccountSerializer,
     CurrencySerializer
+)
+from apps.transactions.permissions import (
+    OnlyAdmin,
+    TransactionPermission
 )
 from apps.transactions.models import (
     Transaction,
@@ -25,7 +28,7 @@ from rest_framework.authentication import TokenAuthentication
 
 
 class AccountAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, OnlyAdmin]
     authentication_classes = [TokenAuthentication]
 
     @staticmethod
@@ -60,7 +63,7 @@ class AccountAPIView(APIView):
 
 
 class TransactionsAPIView(PageNumberPagination, APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TransactionPermission]
     authentication_classes = [TokenAuthentication]
 
     @staticmethod
@@ -69,7 +72,6 @@ class TransactionsAPIView(PageNumberPagination, APIView):
 
     def post(self, request):
         try:
-            # TODO: Add validation checks
             complete_records = []
             for record in request.data["transactions"]:
                 to_account = record.pop("to_account", None)
@@ -129,6 +131,14 @@ class TransactionsAPIView(PageNumberPagination, APIView):
     def patch(self, request):
         transactions = request.data.get('transactions', [])
         try:
+            entry_no = request.data.get("entry_no")
+            is_valid = request.data.get("is_valid", True)
+            if entry_no:
+                print("pass")
+                pk_list = TransactionServices.compile_pk_list(entry_no)
+                transactions = Transaction.objects.filter(entry_no__in=pk_list)
+                transactions.update(is_valid=is_valid)
+                return success_response(data={"message": "updated successfully"}, status=status.HTTP_200_OK)
             for transaction in transactions:
                 transaction_object = Transaction.objects.get(entry_no=transaction.pop("entry_no"))
                 serializer = TransactionSerializer(transaction_object, data=transaction, partial=True)

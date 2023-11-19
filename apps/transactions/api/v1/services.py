@@ -11,7 +11,7 @@ from apps.transactions.constants import (
 )
 from apps.transactions.models import (
     CurrencyOpening,
-    Account
+    Account, Transaction
 )
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -122,6 +122,15 @@ class TransactionServices:
             data["to_account_title"] = to_data["title"]
         return list_of_dict
 
+    @staticmethod
+    def compile_pk_list(entry_no: int) -> List:
+        last_object = Transaction.objects.last()
+        last_entry_no = last_object.entry_no
+        pk_list = []
+
+        for number in range(entry_no, last_entry_no+1):
+            pk_list.append(number)
+        return pk_list
 
 class LedgerServices:
 
