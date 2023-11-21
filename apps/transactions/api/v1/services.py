@@ -134,6 +134,7 @@ class TransactionServices:
             pk_list.append(number)
         return pk_list
 
+
 class LedgerServices:
 
     @staticmethod
@@ -170,7 +171,9 @@ class LedgerServices:
 
         duplicate_dict = copy.deepcopy(debit_credit)
         for data in data_list:
+            print(data)
             record = {
+                "entry_no": data["entry_no"],
                 "date": data["date"],
                 "title": "",
                 "currency": "",
