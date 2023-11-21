@@ -100,30 +100,31 @@ class TransactionsAPIView(PageNumberPagination, APIView):
             if pk:
                 transaction = Transaction.objects.get(entry_no=pk, is_archived=False)
                 serializer = serializer(transaction)
-                response_data = serializer.data
+                data = [serializer.data]
             else:
-                date = request.GET.get("date", None)
-                today_date = datetime.datetime.today().date()
-                if not date:
+                from_date = request.GET.get("from_date", None)
+                to_date = request.GET.get("to_date", datetime.datetime.today().date())
+                if not from_date:
                     raise ValueError("Date not provided, must provide date param")
-                queryset = Transaction.objects.filter(date__range=[date, today_date], is_archived=False).order_by('time')
+                queryset = Transaction.objects.filter(date__range=[from_date, to_date], is_archived=False).order_by('time')
                 self.page_size = 100
                 # paginated_data = self.paginate_queryset(queryset, request)
                 serializer = serializer(queryset, many=True)
-                list_of_dict = TransactionServices.denormalize_accounts(serialized_data=serializer.data)
-                if not list_of_dict:
-                    raise ValueError("No transactions.")
-                dataframe = pd.DataFrame(list_of_dict)
-                dataframe = TransactionServices.order_columns(dataframe=dataframe)
-                data_dict = dataframe.to_dict('records')
+                data = serializer.data
+            list_of_dict = TransactionServices.denormalize_accounts(serialized_data=data)
+            if not list_of_dict:
+                raise ValueError("No transactions.")
+            dataframe = pd.DataFrame(list_of_dict)
+            dataframe = TransactionServices.order_columns(dataframe=dataframe)
+            data_dict = dataframe.to_dict('records')
 
-                # "count": self.page.paginator.count,
-                # "next": self.get_next_link(),
-                # "previous": self.get_previous_link(),
-                # "page_range": list(range(1, self.page.paginator.num_pages + 1))
-                response_data = {
-                    "results": data_dict,
-                }
+            # "count": self.page.paginator.count,
+            # "next": self.get_next_link(),
+            # "previous": self.get_previous_link(),
+            # "page_range": list(range(1, self.page.paginator.num_pages + 1))
+            response_data = {
+                "results": data_dict,
+            }
             return success_response(data=response_data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
