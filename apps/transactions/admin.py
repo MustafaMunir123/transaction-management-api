@@ -23,8 +23,8 @@ class CurrencyAdmin(admin.ModelAdmin):
 
 
 class CurrencyOpeningAdmin(admin.ModelAdmin):
-    search_fields = ["account"]
-    list_display = ["account"]
+    search_fields = ["currency", "account__id"]
+    list_display = ["currency", "account"]
 
 
 admin.site.register(Account, AccountAdmin)
