@@ -5,6 +5,8 @@ from datetime import datetime
 import pandas as pd
 from typing import Dict, List, OrderedDict
 from operator import itemgetter
+
+from apps.transactions.api.v1.serializers import CurrencyOpeningSerializer
 from apps.transactions.constants import (
     EXPORT_ALL,
     EXPORT_LEDGER
@@ -153,11 +155,11 @@ class LedgerServices:
         return currency_records
 
     @staticmethod
-    def calculate_opening_closing(debit_credit: Dict) -> None:
+    def calculate_opening_closing(debit_credit: Dict, pk) -> None:
         for key, value in debit_credit.items():
             debit_credit[key]["closing"] = debit_credit[key]["debit"] - debit_credit[key]["credit"]
             if CurrencyOpening.objects.filter(currency=key).exists():
-                obj = CurrencyOpening.objects.get(currency=key)
+                obj = CurrencyOpening.objects.get(currency=key, account=pk)
                 debit_credit[key]["opening"] = obj.opening
             else:
                 debit_credit[key]["opening"] = 0
@@ -195,8 +197,11 @@ class LedgerServices:
 
     @staticmethod
     def create_update_opening(opening_closing: Dict, pk: int) -> None:
+
         for currency in opening_closing.keys():
             if CurrencyOpening.objects.filter(currency=currency, account=pk).exists():
+                obj = CurrencyOpening.objects.filter(currency=currency, account=pk)
+                s = CurrencyOpeningSerializer(obj, many=True)
                 obj = CurrencyOpening.objects.get(currency=currency, account=pk)
                 obj.opening = opening_closing[currency]["closing"]
                 obj.save()

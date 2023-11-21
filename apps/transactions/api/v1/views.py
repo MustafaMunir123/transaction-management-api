@@ -236,7 +236,7 @@ class LedgerAPIView(APIView):
                                                       is_archived=False).order_by("date").order_by("time")
             serializer = TransactionSerializer(transactions, many=True)
             debit_credit = LedgerServices.debit_credit(serializer.data, pk)
-            LedgerServices.calculate_opening_closing(debit_credit=debit_credit)
+            LedgerServices.calculate_opening_closing(debit_credit=debit_credit, pk=account_serializer.data['id'])
             sorted_transactions = TransactionServices.sort_transactions(transactions=serializer.data)
             sorted_transactions = TransactionServices.denormalize_accounts(sorted_transactions)
             restructured_data = LedgerServices.restructure_data(data_list=sorted_transactions, pk=pk,
@@ -286,7 +286,7 @@ class SummaryAPIView(APIView):
             data_list = []
             pk_list = []
             export = request.data.get("export")
-            accounts = Account.objects.filter()
+            accounts = Account.objects.all()
             account_serializer = AccountSerializer(accounts, many=True)
             for account in account_serializer.data:
                 pk = account["id"]
@@ -297,7 +297,6 @@ class SummaryAPIView(APIView):
                 pk_list.append(pk)
                 data_list.append(data["data"])
             if export:
-                print("che")
                 self.export_all(pk_list)
                 transactions = Transaction.objects.filter(Q(from_account__in=pk_list) | Q(to_account__in=pk_list), is_valid=True,
                                                           is_archived=False).order_by("date").order_by("time")
