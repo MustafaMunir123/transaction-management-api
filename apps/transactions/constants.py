@@ -25,6 +25,7 @@ EXPORT_ALL = {
 }
 
 EXPORT_LEDGER = {
+    "entry_no": "V.R. #",
     "date": "DATE",
     "title": "TITLE",
     "currency": "CURRENCY",
