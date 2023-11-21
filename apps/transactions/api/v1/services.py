@@ -58,6 +58,7 @@ class ExportServices:
 
     def export_ledger(self, data) -> None:
         transactions_dataframe = pd.DataFrame(data["transactions"])
+        transactions_dataframe.pop("title")
         edited_columns = []
         for column in transactions_dataframe.columns:
             if column in EXPORT_LEDGER.keys():
@@ -171,7 +172,6 @@ class LedgerServices:
 
         duplicate_dict = copy.deepcopy(debit_credit)
         for data in data_list:
-            print(data)
             record = {
                 "entry_no": data["entry_no"],
                 "date": data["date"],
