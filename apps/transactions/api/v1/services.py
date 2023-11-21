@@ -56,9 +56,15 @@ class ExportServices:
                         'to_account_title', 'narration', 'date']
         return dataframe[column_order]
 
+    @staticmethod
+    def order_ledger_columns(dataframe):
+        column_order = ['entry_no', "date", "narration", "currency", "debit_amount", "credit_amount", "balance"]
+        return dataframe[column_order]
+
     def export_ledger(self, data) -> None:
         transactions_dataframe = pd.DataFrame(data["transactions"])
         transactions_dataframe.pop("title")
+        transactions_dataframe = self.order_ledger_columns(transactions_dataframe)
         edited_columns = []
         for column in transactions_dataframe.columns:
             if column in EXPORT_LEDGER.keys():
