@@ -1,9 +1,10 @@
+# Third Party Imports
 from rest_framework.permissions import BasePermission
 
 
 class OnlyAdmin(BasePermission):
     def has_permission(self, request, view):
-        allowed_methods = ['GET']
+        allowed_methods = ["GET"]
         if request.user.id == 2:
             return True
         if request.method in allowed_methods:
@@ -13,7 +14,7 @@ class OnlyAdmin(BasePermission):
 
 class TransactionPermission(BasePermission):
     def has_permission(self, request, view):
-        allowed_methods = ['GET', 'POST']
+        allowed_methods = ["GET", "POST"]
         if request.user.id == 2:
             return True
         if request.method in allowed_methods:

@@ -1,7 +1,9 @@
+# Third Party Imports
 from django.contrib import admin
-from apps.users.models import CustomUser
 from django.contrib.auth.admin import UserAdmin
 
+# Local Imports
+from apps.users.models import CustomUser
 
 # from django.contrib.auth.admin import UserAdmin
 

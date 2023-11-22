@@ -1,3 +1,4 @@
+# Local Imports
 from apps.transactions.enums import CurrencyEnum
 
 CURRENCY_CHOICES = (
@@ -21,7 +22,7 @@ EXPORT_ALL = {
     "to_currency": "TO CURRENCY",
     "initial_amount": "INITIAL AMOUNT",
     "converted_amount": "CONVERTED AMOUNT",
-    "narration": "NARRATION"
+    "narration": "NARRATION",
 }
 
 EXPORT_LEDGER = {
@@ -32,5 +33,5 @@ EXPORT_LEDGER = {
     "debit_amount": "DEBIT AMOUNT",
     "credit_amount": "CREDIT AMOUNT",
     "narration": "NARRATION",
-    "balance": "BALANCE"
+    "balance": "BALANCE",
 }

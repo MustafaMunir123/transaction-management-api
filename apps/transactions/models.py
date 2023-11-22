@@ -1,10 +1,11 @@
+# Third Party Imports
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 from rest_framework.exceptions import ValidationError
 
-from apps.users.models import CustomUser
+# Local Imports
 from apps.transactions.constants import CURRENCY_CHOICES
-from phonenumber_field.modelfields import PhoneNumberField
-
+from apps.users.models import CustomUser
 
 # Create your models here.
 
@@ -13,13 +14,13 @@ def validate_decimals(value):
     try:
         return round(float(value), 4)
     except Exception:
-        raise ValidationError('Not an integer or a float  number')
+        raise ValidationError("Not an integer or a float  number")
 
 
 class CurrencyOpening(models.Model):
     objects = None
     currency = models.CharField(max_length=3, null=False, blank=False)
-    account = models.ForeignKey('Account', on_delete=models.CASCADE, related_name='currency_openings')
+    account = models.ForeignKey("Account", on_delete=models.CASCADE, related_name="currency_openings")
     opening = models.FloatField(validators=[validate_decimals], default=0.0000)
 
 

@@ -1,10 +1,8 @@
+# Third Party Imports
 from django.contrib import admin
-from apps.transactions.models import (
-    Account,
-    Transaction,
-    Currency,
-    CurrencyOpening
-)
+
+# Local Imports
+from apps.transactions.models import Account, Currency, CurrencyOpening, Transaction
 
 
 class AccountAdmin(admin.ModelAdmin):

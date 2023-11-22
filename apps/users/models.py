@@ -1,6 +1,6 @@
-from django.db import models
+# Third Party Imports
 from django.contrib.auth.models import AbstractUser
-
+from django.db import models
 
 # Create your models here.
 

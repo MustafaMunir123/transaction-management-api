@@ -1,9 +1,8 @@
+# Third Party Imports
 from django.urls import path
-from apps.users.api.v1.views import (
-    LoginDetailsAPIView,
-    RegisterUserAPIView,
-    UserAPIView,
-)
+
+# Local Imports
+from apps.users.api.v1.views import LoginDetailsAPIView, RegisterUserAPIView, UserAPIView
 
 urlpatterns = [
     path("login/", LoginDetailsAPIView.as_view()),
