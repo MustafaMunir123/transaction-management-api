@@ -29,3 +29,8 @@ repos:
     hooks:
       - id: djlint-reformat-django
       - id: djlint-django
+
+ci:
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
