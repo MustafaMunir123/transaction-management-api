@@ -1,0 +1,36 @@
+name: Django Code Formatter
+
+# Enable Buildkit and let compose use it to speed up image building
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+on:
+  pull_request:
+    branches: [ "main", "dev" ]
+    paths: [ "apps/**" ]
+
+  push:
+    branches: [ "main", "dev" ]
+    paths: [ "apps/**" ]
+
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3.5.3
+
+      - name: Set up Python 3.9.0
+        uses: actions/setup-python@v4.7.0
+        with:
+          python-version: 3.11.4
+          check-latest: true
+
+      # Run all pre-commit hooks on all the files.
+      # Getting only staged files can be tricky in case a new PR is opened
+      # since the action is run on a branch in detached head state
+      - name: Install and Run Pre-commit
+        uses: pre-commit/action@v3.0.0
