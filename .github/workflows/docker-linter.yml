@@ -26,7 +26,7 @@ jobs:
       - name: Set up Python 3.9.0
         uses: actions/setup-python@v4.7.0
         with:
-          python-version: 3.11.4
+          python-version: 3.9.0
           check-latest: true
 
       # Run all pre-commit hooks on all the files.
