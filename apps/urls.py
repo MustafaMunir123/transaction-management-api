@@ -1,5 +1,5 @@
 # Third Party Imports
-from django.urls import include, path
+from            django.urls import include, path
 
 # Local Imports
 from apps.transactions.api import urls as TRANSACTION_API
