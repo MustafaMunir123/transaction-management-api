@@ -8,11 +8,11 @@ env:
 on:
   pull_request:
     branches: [ "master", "feature" ]
-    paths: [ "apps/**", "/"]
+    paths: [ "*"]
 
   push:
     branches: [ "master", "feature" ]
-    paths: ["/"]
+    paths: ["*"]
 
 
 jobs:
