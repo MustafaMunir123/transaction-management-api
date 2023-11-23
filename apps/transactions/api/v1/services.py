@@ -1,27 +1,25 @@
-import os
-import json
+# Standard Library Imports
 import copy
+import json
+import os
 from datetime import datetime
-import pandas as pd
-from typing import Dict, List, OrderedDict
 from operator import itemgetter
+from typing import Dict, List, OrderedDict
 
-from apps.transactions.api.v1.serializers import CurrencyOpeningSerializer
-from apps.transactions.constants import (
-    EXPORT_ALL,
-    EXPORT_LEDGER
-)
-from apps.transactions.models import (
-    CurrencyOpening,
-    Account, Transaction
-)
+# Third Party Imports
+import pandas as pd
 from openpyxl import Workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Font
+from openpyxl.utils.dataframe import dataframe_to_rows
+
+# Local Imports
+# from apps.transactions.api.v1.serializers import CurrencyOpeningSerializer
+from apps.transactions.constants import EXPORT_ALL, EXPORT_LEDGER
+from apps.transactions.models import Account, CurrencyOpening, Transaction
 
 
 class ExportServices:
-    download_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    download_path = os.path.join(os.path.join(os.environ["USERPROFILE"]), "Desktop")
 
     def export_all(self, serialized_data: List[Dict]) -> None:
         if not serialized_data:
@@ -51,14 +49,26 @@ class ExportServices:
 
     @staticmethod
     def order_columns(dataframe):
-        column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency',
-                        'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id',
-                        'to_account_title', 'narration', 'date']
+        column_order = [
+            "entry_no",
+            "from_account_id",
+            "from_account_title",
+            "initial_amount",
+            "from_currency",
+            "multiply_by",
+            "divide_by",
+            "converted_amount",
+            "to_currency",
+            "to_account_id",
+            "to_account_title",
+            "narration",
+            "date",
+        ]
         return dataframe[column_order]
 
     @staticmethod
     def order_ledger_columns(dataframe):
-        column_order = ['entry_no', "date", "narration", "currency", "debit_amount", "credit_amount", "balance"]
+        column_order = ["entry_no", "date", "narration", "currency", "debit_amount", "credit_amount", "balance"]
         return dataframe[column_order]
 
     def export_ledger(self, data) -> None:
@@ -75,7 +85,7 @@ class ExportServices:
         general_info = {
             "title": data["account"].pop("title"),
             "date": datetime.today().date(),
-            "time": datetime.today().time()
+            "time": datetime.today().time(),
         }
         general_dataframe = pd.DataFrame(general_info, index=[1])
         general_dataframe.columns = general_dataframe.columns.str.upper()
@@ -105,7 +115,6 @@ class ExportServices:
 
 
 class TransactionServices:
-
     @staticmethod
     def sort_transactions(transactions: List) -> List:
         transactions.sort(key=itemgetter("entry_no"))
@@ -113,9 +122,22 @@ class TransactionServices:
 
     @staticmethod
     def order_columns(dataframe):
-        column_order = ['entry_no', 'from_account_id', 'from_account_title', 'initial_amount', 'from_currency',
-                        'multiply_by', 'divide_by', 'converted_amount', 'to_currency', 'to_account_id',
-                        'to_account_title', 'narration', 'is_valid', 'date']
+        column_order = [
+            "entry_no",
+            "from_account_id",
+            "from_account_title",
+            "initial_amount",
+            "from_currency",
+            "multiply_by",
+            "divide_by",
+            "converted_amount",
+            "to_currency",
+            "to_account_id",
+            "to_account_title",
+            "narration",
+            "is_valid",
+            "date",
+        ]
         return dataframe[column_order]
 
     @staticmethod
@@ -137,13 +159,12 @@ class TransactionServices:
         last_entry_no = last_object.entry_no
         pk_list = []
 
-        for number in range(entry_no, last_entry_no+1):
+        for number in range(entry_no, last_entry_no + 1):
             pk_list.append(number)
         return pk_list
 
 
 class LedgerServices:
-
     @staticmethod
     def debit_credit(transactions: List, pk: int) -> Dict:
         currency_records = {}
@@ -186,7 +207,7 @@ class LedgerServices:
                 "debit_amount": 0,
                 "credit_amount": 0,
                 "narration": data["narration"],
-                "balance": 0
+                "balance": 0,
             }
             if data["from_account_id"] == pk:
                 record["debit_amount"] = data["initial_amount"]
@@ -206,20 +227,17 @@ class LedgerServices:
 
     @staticmethod
     def create_update_opening(opening_closing: Dict, pk: int) -> None:
-
         for currency in opening_closing.keys():
             if CurrencyOpening.objects.filter(currency=currency, account=pk).exists():
-                obj = CurrencyOpening.objects.filter(currency=currency, account=pk)
-                s = CurrencyOpeningSerializer(obj, many=True)
                 obj = CurrencyOpening.objects.get(currency=currency, account=pk)
                 obj.opening = opening_closing[currency]["closing"]
                 obj.save()
             else:
                 account = Account.objects.get(id=pk)
-                obj = CurrencyOpening.objects.create(currency=currency, account=account, opening=opening_closing[currency]["closing"])
+                obj = CurrencyOpening.objects.create(
+                    currency=currency, account=account, opening=opening_closing[currency]["closing"]
+                )
                 obj.save()
 
 
 # class SummaryServices:
-
-

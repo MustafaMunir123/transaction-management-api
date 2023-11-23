@@ -1,7 +1,10 @@
+# Standard Library Imports
 from threading import local
-from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth import get_user_model
+
+# Third Party Imports
 from django.conf import settings as app_settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
 
 _stash = local()
 

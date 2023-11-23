@@ -1,4 +1,7 @@
+# Third Party Imports
 from rest_framework import serializers
+
+# Local Imports
 from apps.users.models import CustomUser
 
 

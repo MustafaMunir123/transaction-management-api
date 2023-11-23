@@ -1,4 +1,7 @@
+# Third Party Imports
 from rest_framework.authtoken.models import Token
+
+# Local Imports
 from apps.users.models import CustomUser
 
 

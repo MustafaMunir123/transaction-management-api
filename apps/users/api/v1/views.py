@@ -1,18 +1,15 @@
+# Third Party Imports
 from django.contrib.auth import authenticate
-from rest_framework.views import APIView, Response, status
-from apps.users.api.permissions import IsAuthenticatedAndAdmin
 from rest_framework.authentication import TokenAuthentication
-from apps.users.api.v1.serializers import (
-    LoginSerializer,
-    CustomUserSerializer,
-    RegisterSerializer,
-)
-from apps.users.models import CustomUser
-from apps.utils import (
-    success_response,
-)
+from rest_framework.views import APIView, Response, status
+
+# Local Imports
 from apps.transactions.api.v1.urls import router
-from apps.users.functions import get_token_for_user, create_token_for_user
+from apps.users.api.permissions import IsAuthenticatedAndAdmin
+from apps.users.api.v1.serializers import CustomUserSerializer, LoginSerializer, RegisterSerializer
+from apps.users.functions import create_token_for_user, get_token_for_user
+from apps.users.models import CustomUser
+from apps.utils import success_response
 
 # Create your views here.
 
