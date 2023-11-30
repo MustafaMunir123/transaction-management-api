@@ -4,7 +4,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Response, status
 
 # Local Imports
-from apps.transactions.api.v1.urls import router
+# from apps.transactions.api.v1.urls import router
 from apps.users.api.permissions import IsAuthenticatedAndAdmin
 from apps.users.api.v1.serializers import CustomUserSerializer, LoginSerializer, RegisterSerializer
 from apps.users.functions import create_token_for_user, get_token_for_user
@@ -74,7 +74,6 @@ class UserAPIView(APIView):
 
     def get(self, request, pk=None):
         try:
-            print(router.urls)
             serializer = self.get_serializer()
             if pk:
                 user = CustomUser.objects.get(id=pk)
