@@ -78,10 +78,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "transaction_management_api.wsgi.application"
 
-
-AUTHENTICATION_METHOD = "email"
-
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -144,12 +140,10 @@ USE_TZ = True
 
 AUTH_USER_MODEL = "users.CustomUser"
 
-AUTHENTICATION_BACKENDS = (
-    # Needed to login by username in Django admin, regardless of `allauth`
+AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    # `allauth` specific authentication methods, such as login by e-mail
-    "apps.authentications.CustomAuthenticationBackend",
-)
+    "rest_framework.authentication.TokenAuthentication",
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
