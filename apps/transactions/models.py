@@ -50,7 +50,9 @@ class Transaction(models.Model):
     entry_no = models.IntegerField(auto_created=False, primary_key=True)
     from_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions_from")
     to_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions_to")
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(
+        auto_now_add=False,
+    )
     time = models.TimeField(auto_now_add=True)
     from_currency = models.CharField(max_length=3, null=False, blank=False, choices=CURRENCY_CHOICES)
     to_currency = models.CharField(max_length=3, null=False, blank=False, choices=CURRENCY_CHOICES)

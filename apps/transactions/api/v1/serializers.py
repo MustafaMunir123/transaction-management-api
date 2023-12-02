@@ -23,10 +23,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
-    read_only_fields = (
-        "date",
-        "time",
-    )
+    read_only_fields = ("time",)
     from_account = AccountSerializer(read_only=True)
     to_account = AccountSerializer(read_only=True)
 
@@ -48,6 +45,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             "time",
             "is_archived",
         ]
+        extra_kwargs = {"date": {"format": "%d-%m-%Y"}}
 
     def create(self, validated_data):
         return Transaction.objects.create(**validated_data)
