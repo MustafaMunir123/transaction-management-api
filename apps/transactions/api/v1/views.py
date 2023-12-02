@@ -91,7 +91,7 @@ class TransactionsAPIView(PageNumberPagination, APIView):
                 if not from_date:
                     raise ValueError("Date not provided, must provide date param")
                 queryset = Transaction.objects.filter(date__range=[from_date, to_date], is_archived=False).order_by(
-                    "time"
+                    "entry_no"
                 )
                 self.page_size = 100
                 # paginated_data = self.paginate_queryset(queryset, request)
