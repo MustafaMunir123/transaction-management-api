@@ -71,7 +71,7 @@ class ExportServices:
         column_order = ["entry_no", "date", "narration", "currency", "debit_amount", "credit_amount", "balance"]
         return dataframe[column_order]
 
-    def export_ledger(self, data) -> None:
+    def export_ledger(self, data, account) -> None:
         transactions_dataframe = pd.DataFrame(data["transactions"])
         transactions_dataframe.pop("title")
         transactions_dataframe = self.order_ledger_columns(transactions_dataframe)
@@ -99,7 +99,7 @@ class ExportServices:
         row_number = self.append_to_worksheet(worksheet, general_dataframe, 1)
         self.append_to_worksheet(worksheet, transactions_dataframe, row_number)
 
-        workbook.save(f"{self.download_path}/ledger.xlsx")
+        workbook.save(f"{self.download_path}/{account.title}.xlsx")
 
     @staticmethod
     def append_to_worksheet(worksheet, dataframe, row_number, index=False):

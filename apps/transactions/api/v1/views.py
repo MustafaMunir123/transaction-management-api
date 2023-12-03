@@ -60,21 +60,34 @@ class TransactionsAPIView(PageNumberPagination, APIView):
 
     def post(self, request):
         try:
-            complete_records = []
-            for record in request.data["transactions"]:
-                to_account = record.pop("to_account", None)
-                from_account = record.pop("from_account", None)
-                to_account_instance = Account.objects.get(id=to_account)
-                from_account_instance = Account.objects.get(id=from_account)
-                serializer = self.get_serializer()
-                serializer = serializer(data=record)
-                serializer.is_valid(raise_exception=True)
-                serializer.save(to_account=to_account_instance, from_account=from_account_instance)
-                serializer.validated_data["to_account"] = to_account_instance.title
-                serializer.validated_data["from_account"] = from_account_instance.title
-                serializer.validated_data["entry_no"] = serializer.data["entry_no"]
-                complete_records.append(serializer.validated_data)
-            return success_response(data=complete_records, status=status.HTTP_200_OK)
+            entry_no = request.data.get("entry_no", None)
+            if not entry_no:
+                return success_response(success=False, status=status.HTTP_400_BAD_REQUEST, data="entry_no not provided")
+
+            transaction = Transaction.objects.filter(entry_no=entry_no)
+            if transaction and transaction[0]:
+                transaction.update(**request.data)
+                return success_response(status=status.HTTP_200_OK, data=f"transaction with id {entry_no} updated.")
+
+            last_transaction = Transaction.objects.last()
+            last_entry = last_transaction.entry_no
+            if entry_no != last_entry + 1:
+                return success_response(
+                    status=status.HTTP_400_BAD_REQUEST, success=False, data="invalid transaction id"
+                )
+
+            to_account = request.data.pop("to_account", None)
+            from_account = request.data.pop("from_account", None)
+            to_account_instance = Account.objects.get(id=to_account)
+            from_account_instance = Account.objects.get(id=from_account)
+            serializer = self.get_serializer()
+            serializer = serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(to_account=to_account_instance, from_account=from_account_instance)
+            serializer.validated_data["to_account"] = to_account_instance.title
+            serializer.validated_data["from_account"] = from_account_instance.title
+            serializer.validated_data["entry_no"] = serializer.data["entry_no"]
+            return success_response(data=serializer.validated_data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
 
@@ -178,8 +191,12 @@ class ExportAPIView(APIView):
     @staticmethod
     def export_ledger(request, pk=None):
         try:
+            account = Account.objects.filter(id=pk)
+            if not account:
+                return success_response(status=status.HTTP_400_BAD_REQUEST, data="account does not exists")
+
             data = LedgerAPIView().get(request=request, pk=pk).data
-            ExportServices().export_ledger(data=data["data"])
+            ExportServices().export_ledger(data=data["data"], account=account[0])
             return success_response(data="File Created", status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
