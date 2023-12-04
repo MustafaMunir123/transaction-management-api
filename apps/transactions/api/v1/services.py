@@ -187,7 +187,7 @@ class LedgerServices:
     def calculate_opening_closing(debit_credit: Dict, pk) -> None:
         for key, value in debit_credit.items():
             debit_credit[key]["closing"] = debit_credit[key]["debit"] - debit_credit[key]["credit"]
-            if CurrencyOpening.objects.filter(currency=key).exists():
+            if CurrencyOpening.objects.filter(currency=key, account=pk).exists():
                 obj = CurrencyOpening.objects.get(currency=key, account=pk)
                 debit_credit[key]["opening"] = obj.opening
             else:
