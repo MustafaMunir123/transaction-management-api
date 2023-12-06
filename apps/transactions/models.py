@@ -34,6 +34,7 @@ class Account(models.Model):
     mobile_2 = PhoneNumberField(null=True, unique=True)
     address = models.CharField(max_length=300, null=True)
     company_name = models.CharField(max_length=200, null=True)
+    authorize = models.BooleanField(default=True, null=False, blank=False)
 
     def __str__(self):
         return f"{self.title}  {self.note}"

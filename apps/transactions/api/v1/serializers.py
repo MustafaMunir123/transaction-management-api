@@ -8,7 +8,7 @@ from apps.transactions.models import Account, Currency, CurrencyOpening, Transac
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ["id", "title", "note", "full_name", "mobile_1", "mobile_2", "address", "company_name"]
+        fields = ["id", "title", "note", "full_name", "mobile_1", "mobile_2", "address", "company_name", "authorize"]
 
     def create(self, validated_data):
         mobile_1 = validated_data.get("mobile_1")

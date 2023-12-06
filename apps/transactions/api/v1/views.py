@@ -40,10 +40,16 @@ class AccountAPIView(APIView):
         try:
             serializer = self.get_serializer()
             if pk:
-                accounts = Account.objects.get(id=pk)
-                serializer = serializer(accounts, many=False)
+                if request.user.id == 2:
+                    account = Account.objects.get(id=pk)
+                else:
+                    account = Account.objects.get(id=pk, authorize=True)
+                serializer = serializer(account, many=False)
             else:
-                accounts = Account.objects.all()
+                if request.user.id == 2:
+                    accounts = Account.objects.all()
+                else:
+                    accounts = Account.objects.filter(authorize=True)
                 serializer = serializer(accounts, many=True)
             return success_response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
@@ -191,7 +197,10 @@ class ExportAPIView(APIView):
     @staticmethod
     def export_ledger(request, pk=None):
         try:
-            account = Account.objects.filter(id=pk)
+            if request.user.id == 2:
+                account = Account.objects.filter(id=pk)
+            else:
+                account = Account.objects.filter(id=pk, authorize=True)
             if not account:
                 return success_response(status=status.HTTP_400_BAD_REQUEST, data="account does not exists")
 
@@ -231,9 +240,16 @@ class CurrencyAPIView(APIView):
 
 
 class LedgerAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     def get(self, request, pk: int):
         try:
-            account = Account.objects.get(id=pk)
+            if request.user.id == 2:
+                account = Account.objects.get(id=pk)
+                print("pass")
+            else:
+                account = Account.objects.get(id=pk, authorize=True)
             account_serializer = AccountSerializer(account)
             transactions = (
                 Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk), is_valid=True, is_archived=False)
@@ -269,6 +285,9 @@ class TransactionNumber(APIView):
 
 
 class SummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated, TransactionPermission]
+    authentication_classes = [TokenAuthentication]
+
     @staticmethod
     def export_all(pk_list):
         try:
