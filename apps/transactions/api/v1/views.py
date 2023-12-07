@@ -40,16 +40,10 @@ class AccountAPIView(APIView):
         try:
             serializer = self.get_serializer()
             if pk:
-                if request.user.id == 2:
-                    account = Account.objects.get(id=pk)
-                else:
-                    account = Account.objects.get(id=pk, authorize=True)
+                account = Account.objects.get(id=pk)
                 serializer = serializer(account, many=False)
             else:
-                if request.user.id == 2:
-                    accounts = Account.objects.all()
-                else:
-                    accounts = Account.objects.filter(authorize=True)
+                accounts = Account.objects.all()
                 serializer = serializer(accounts, many=True)
             return success_response(data=serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
