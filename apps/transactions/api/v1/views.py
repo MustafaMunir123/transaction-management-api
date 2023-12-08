@@ -40,8 +40,8 @@ class AccountAPIView(APIView):
         try:
             serializer = self.get_serializer()
             if pk:
-                accounts = Account.objects.get(id=pk)
-                serializer = serializer(accounts, many=False)
+                account = Account.objects.get(id=pk)
+                serializer = serializer(account, many=False)
             else:
                 accounts = Account.objects.all()
                 serializer = serializer(accounts, many=True)
@@ -60,21 +60,34 @@ class TransactionsAPIView(PageNumberPagination, APIView):
 
     def post(self, request):
         try:
-            complete_records = []
-            for record in request.data["transactions"]:
-                to_account = record.pop("to_account", None)
-                from_account = record.pop("from_account", None)
-                to_account_instance = Account.objects.get(id=to_account)
-                from_account_instance = Account.objects.get(id=from_account)
-                serializer = self.get_serializer()
-                serializer = serializer(data=record)
-                serializer.is_valid(raise_exception=True)
-                serializer.save(to_account=to_account_instance, from_account=from_account_instance)
-                serializer.validated_data["to_account"] = to_account_instance.title
-                serializer.validated_data["from_account"] = from_account_instance.title
-                serializer.validated_data["entry_no"] = serializer.data["entry_no"]
-                complete_records.append(serializer.validated_data)
-            return success_response(data=complete_records, status=status.HTTP_200_OK)
+            entry_no = request.data.get("entry_no", None)
+            if not entry_no:
+                return success_response(success=False, status=status.HTTP_400_BAD_REQUEST, data="entry_no not provided")
+
+            transaction = Transaction.objects.filter(entry_no=entry_no)
+            if transaction and transaction[0]:
+                transaction.update(**request.data)
+                return success_response(status=status.HTTP_200_OK, data=f"transaction with id {entry_no} updated.")
+
+            last_transaction = Transaction.objects.last()
+            last_entry = last_transaction.entry_no
+            if entry_no != last_entry + 1:
+                return success_response(
+                    status=status.HTTP_400_BAD_REQUEST, success=False, data="invalid transaction id"
+                )
+
+            to_account = request.data.pop("to_account", None)
+            from_account = request.data.pop("from_account", None)
+            to_account_instance = Account.objects.get(id=to_account)
+            from_account_instance = Account.objects.get(id=from_account)
+            serializer = self.get_serializer()
+            serializer = serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(to_account=to_account_instance, from_account=from_account_instance)
+            serializer.validated_data["to_account"] = to_account_instance.title
+            serializer.validated_data["from_account"] = from_account_instance.title
+            serializer.validated_data["entry_no"] = serializer.data["entry_no"]
+            return success_response(data=serializer.validated_data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
 
@@ -91,7 +104,7 @@ class TransactionsAPIView(PageNumberPagination, APIView):
                 if not from_date:
                     raise ValueError("Date not provided, must provide date param")
                 queryset = Transaction.objects.filter(date__range=[from_date, to_date], is_archived=False).order_by(
-                    "time"
+                    "entry_no"
                 )
                 self.page_size = 100
                 # paginated_data = self.paginate_queryset(queryset, request)
@@ -178,8 +191,15 @@ class ExportAPIView(APIView):
     @staticmethod
     def export_ledger(request, pk=None):
         try:
+            if request.user.id == 2:
+                account = Account.objects.filter(id=pk)
+            else:
+                account = Account.objects.filter(id=pk, authorize=True)
+            if not account:
+                return success_response(status=status.HTTP_400_BAD_REQUEST, data="account does not exists")
+
             data = LedgerAPIView().get(request=request, pk=pk).data
-            ExportServices().export_ledger(data=data["data"])
+            ExportServices().export_ledger(data=data["data"], account=account[0])
             return success_response(data="File Created", status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
@@ -214,9 +234,16 @@ class CurrencyAPIView(APIView):
 
 
 class LedgerAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     def get(self, request, pk: int):
         try:
-            account = Account.objects.get(id=pk)
+            if request.user.id == 2:
+                account = Account.objects.get(id=pk)
+                print("pass")
+            else:
+                account = Account.objects.get(id=pk, authorize=True)
             account_serializer = AccountSerializer(account)
             transactions = (
                 Transaction.objects.filter(Q(from_account=pk) | Q(to_account=pk), is_valid=True, is_archived=False)
@@ -252,6 +279,9 @@ class TransactionNumber(APIView):
 
 
 class SummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated, TransactionPermission]
+    authentication_classes = [TokenAuthentication]
+
     @staticmethod
     def export_all(pk_list):
         try:
@@ -296,5 +326,6 @@ class SummaryAPIView(APIView):
                 )
                 transactions.update(is_archived=True)
             return success_response(data=data_list, status=status.HTTP_200_OK)
+
         except Exception as ex:
             raise ex

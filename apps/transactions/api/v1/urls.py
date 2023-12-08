@@ -13,9 +13,6 @@ from apps.transactions.api.v1.views import (
     TransactionsAPIView,
 )
 
-# from rest_framework.routers import DefaultRouter
-
-
 # router = DefaultRouter()
 
 # router.register("", TransactionsAPIView, basename='Transaction')

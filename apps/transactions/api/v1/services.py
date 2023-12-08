@@ -71,7 +71,7 @@ class ExportServices:
         column_order = ["entry_no", "date", "narration", "currency", "debit_amount", "credit_amount", "balance"]
         return dataframe[column_order]
 
-    def export_ledger(self, data) -> None:
+    def export_ledger(self, data, account) -> None:
         transactions_dataframe = pd.DataFrame(data["transactions"])
         transactions_dataframe.pop("title")
         transactions_dataframe = self.order_ledger_columns(transactions_dataframe)
@@ -99,7 +99,7 @@ class ExportServices:
         row_number = self.append_to_worksheet(worksheet, general_dataframe, 1)
         self.append_to_worksheet(worksheet, transactions_dataframe, row_number)
 
-        workbook.save(f"{self.download_path}/ledger.xlsx")
+        workbook.save(f"{self.download_path}/{account.title}.xlsx")
 
     @staticmethod
     def append_to_worksheet(worksheet, dataframe, row_number, index=False):
@@ -187,7 +187,7 @@ class LedgerServices:
     def calculate_opening_closing(debit_credit: Dict, pk) -> None:
         for key, value in debit_credit.items():
             debit_credit[key]["closing"] = debit_credit[key]["debit"] - debit_credit[key]["credit"]
-            if CurrencyOpening.objects.filter(currency=key).exists():
+            if CurrencyOpening.objects.filter(currency=key, account=pk).exists():
                 obj = CurrencyOpening.objects.get(currency=key, account=pk)
                 debit_credit[key]["opening"] = obj.opening
             else:
