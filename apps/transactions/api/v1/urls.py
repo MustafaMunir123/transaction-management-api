@@ -13,10 +13,6 @@ from apps.transactions.api.v1.views import (
     TransactionsAPIView,
 )
 
-
-
-
-
 # router.register("", TransactionsAPIView, basename='Transaction')
 
 urlpatterns = [
