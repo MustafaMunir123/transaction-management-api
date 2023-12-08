@@ -326,5 +326,6 @@ class SummaryAPIView(APIView):
                 )
                 transactions.update(is_archived=True)
             return success_response(data=data_list, status=status.HTTP_200_OK)
+
         except Exception as ex:
             raise ex
