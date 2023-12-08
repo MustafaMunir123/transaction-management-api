@@ -29,7 +29,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "mm3677.pythonanywhere.com"]
 
-
 # Application definition
 
 DEFAULT_APPS = [
@@ -123,10 +122,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # EMAIl_HOST_PASSWORD = ''
 # EMAIL_USE_SSL = False
 # EMAIL_USE_TLS = True
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
 
