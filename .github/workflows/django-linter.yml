@@ -7,11 +7,11 @@ env:
 
 on:
   pull_request:
-    branches: [ "master", "feature" ]
+    branches: [ "master", "feature", "test123"]
     paths: [ "*"]
 
   push:
-    branches: [ "master", "feature" ]
+    branches: [ "master", "feature", "test123" ]
     paths: ["*"]
 
 
