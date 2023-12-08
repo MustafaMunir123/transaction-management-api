@@ -5,26 +5,38 @@ repos:
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
+        files: ^apps/
       - id: trailing-whitespace
+        files: ^apps/
 
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 23.9.1
     hooks:
       - id: black
+        files: ^apps/
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
+        files: ^apps/
         name: isort (python)
 
   - repo: https://github.com/pycqa/flake8
     rev: 6.1.0
     hooks:
       - id: flake8
+        files: ^apps/
 
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.32.0
     hooks:
       - id: djlint-reformat-django
+        files: ^apps/
       - id: djlint-django
+        files: ^apps/
+
+ci:
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
