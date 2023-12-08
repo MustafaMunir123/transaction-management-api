@@ -11,6 +11,7 @@ repos:
     rev: 23.9.1
     hooks:
       - id: black
+        args: [--config=backend/pyproject.toml, --check, --diff, apps/]
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -22,6 +23,7 @@ repos:
     rev: 6.1.0
     hooks:
       - id: flake8
+        args: [--config=backend/tox.ini, apps/]
 
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.32.0
