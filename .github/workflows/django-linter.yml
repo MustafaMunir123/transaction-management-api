@@ -7,11 +7,11 @@ env:
 
 on:
   pull_request:
-    branches: [ "master", "feature", "test123"]
+    branches: [ "master", "feature"]
     paths: [ "*"]
 
   push:
-    branches: [ "master", "feature", "test123" ]
+    branches: [ "master", "feature"]
     paths: ["*"]
 
 
@@ -33,7 +33,3 @@ jobs:
         uses: pre-commit/action@v3.0.0
         with:
           config: .pre-commit-config.yaml
-
-      - name: Run Pre-commit on changed files
-        run: |
-          pre-commit run --from-ref=$GITHUB_BASE_REF --to-ref=$GITHUB_HEAD_REF --all-files
