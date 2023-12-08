@@ -13,8 +13,6 @@ from apps.transactions.api.v1.views import (
     TransactionsAPIView,
 )
 
-
-
 # router = DefaultRouter()
 
 # router.register("", TransactionsAPIView, basename='Transaction')
