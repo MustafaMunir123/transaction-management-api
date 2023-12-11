@@ -1,4 +1,6 @@
 exclude: 'migrations/.*|.idea/.*'
+files: ^apps/
+fail_fast: true
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -28,3 +30,9 @@ repos:
     hooks:
       - id: djlint-reformat-django
       - id: djlint-django
+
+
+ci:
+  autoupdate_schedule: monthly
+  skip: []
+  submodules: false
