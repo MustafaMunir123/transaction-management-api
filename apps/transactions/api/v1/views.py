@@ -208,8 +208,6 @@ class ExportAPIView(APIView):
         try:
             if "ledger" in request.path:
                 return self.export_ledger(request=request, pk=pk)
-            # else:
-            #     return self.export_all(request)
 
         except Exception as ex:
             raise ex
@@ -259,8 +257,6 @@ class LedgerAPIView(APIView):
                 data_list=sorted_transactions, pk=pk, debit_credit=debit_credit
             )
             data = {"account": account_serializer.data, "debit_credit": debit_credit, "transactions": restructured_data}
-            # if request.data["export"]:
-            #     LedgerServices.create_update_opening(debit_credit, pk)
             return success_response(data=data, status=status.HTTP_200_OK)
 
         except Exception as ex:

@@ -13,15 +13,10 @@ from apps.transactions.api.v1.views import (
     TransactionsAPIView,
 )
 
-# router = DefaultRouter()
-
-# router.register("", TransactionsAPIView, basename='Transaction')
-
 urlpatterns = [
     path("account/create/", AccountAPIView.as_view()),
     path("account/<int:pk>/", AccountAPIView.as_view()),
     path("account/all/", AccountAPIView.as_view()),
-    # url("", include(router.urls)),
     path("create/", TransactionsAPIView.as_view()),
     path("update/", TransactionsAPIView.as_view()),
     path("all/details/", TransactionsAPIView.as_view()),
