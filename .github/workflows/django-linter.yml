@@ -6,14 +6,13 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 on:
-  pull_request:
-    branches: [ "master", "feature"]
-    paths: ["apps/**"]
-
   push:
     branches: [ "master", "feature"]
     paths: ["apps/**"]
 
+  pull_request:
+    branches: [ "master", "feature"]
+    paths: ["apps/**"]
 
 jobs:
   linter:
@@ -21,7 +20,7 @@ jobs:
     steps:
 
       - name: Checkout Code Repository
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11.4
         uses: actions/setup-python@v4.7.0
@@ -29,5 +28,19 @@ jobs:
           python-version: 3.11.4
           check-latest: true
 
+      - id: file_changes
+        uses: tj-actions/changed-files@v40
+
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.file_changes.outputs.all_changed_files }}; do
+            echo "$(file) was changed"
+          done
+
       - name: Install and Run Pre-commit
         uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: --files ${{ steps.file_changes.outputs.all_changed_files}}
+#        with:
+#          output: ' '
+
