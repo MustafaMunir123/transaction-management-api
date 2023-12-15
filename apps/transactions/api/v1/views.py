@@ -28,10 +28,13 @@ class AccountAPIView(APIView):
     def post(self, request):
         try:
             user = request.user
+            print("Boss")
             serializer = self.get_serializer()
             serializer = serializer(data=request.data)
+            print("Toss")
             serializer.is_valid(raise_exception=True)
             serializer.save(user=user)
+            print("Loss")
             return success_response(data=serializer.validated_data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
@@ -70,11 +73,12 @@ class TransactionsAPIView(PageNumberPagination, APIView):
                 return success_response(status=status.HTTP_200_OK, data=f"transaction with id {entry_no} updated.")
 
             last_transaction = Transaction.objects.last()
-            last_entry = last_transaction.entry_no
-            if entry_no != last_entry + 1:
-                return success_response(
-                    status=status.HTTP_400_BAD_REQUEST, success=False, data="invalid transaction id"
-                )
+            if last_transaction:
+                last_entry = last_transaction.entry_no
+                if entry_no != last_entry + 1:
+                    return success_response(
+                        status=status.HTTP_400_BAD_REQUEST, success=False, data="invalid transaction id"
+                    )
 
             to_account = request.data.pop("to_account", None)
             from_account = request.data.pop("from_account", None)
