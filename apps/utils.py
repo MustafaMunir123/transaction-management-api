@@ -17,8 +17,9 @@ def success_response(status, data, success=True):
 
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
+    print(exc)
     if response is not None:
-        response.data = error_response(exc.args)
+        response.data = error_response(str(exc))
         return response.data
     elif (
         isinstance(exc, FieldError)
@@ -26,7 +27,6 @@ def custom_exception_handler(exc, context):
         or isinstance(exc, TypeError)
         or isinstance(exc, AssertionError)
         or isinstance(exc, OperationalError)
-        or isinstance(exc, PermissionError)
     ):
         response = error_response(str(exc))
     elif isinstance(exc, IntegrityError):
@@ -35,6 +35,8 @@ def custom_exception_handler(exc, context):
         response = error_response(str(exc))
     elif isinstance(exc, KeyError):
         response = error_response("Invalid Parameters")
+    else:
+        response = response
 
     return response
 

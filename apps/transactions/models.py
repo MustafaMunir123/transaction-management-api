@@ -31,9 +31,9 @@ class Account(models.Model):
     title = models.CharField(max_length=100, null=False, blank=False, unique=True)
     note = models.TextField(max_length=200, null=False)
     mobile_1 = PhoneNumberField(null=False, unique=True)
-    mobile_2 = PhoneNumberField(null=True, unique=True)
-    address = models.CharField(max_length=300, null=True)
-    company_name = models.CharField(max_length=200, null=True)
+    mobile_2 = PhoneNumberField(null=True, unique=True, blank=True)
+    address = models.CharField(max_length=300, null=True, blank=True)
+    company_name = models.CharField(max_length=200, null=True, blank=True)
     authorize = models.BooleanField(default=True, null=False, blank=False)
 
     def __str__(self):

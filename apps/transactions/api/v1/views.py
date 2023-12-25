@@ -14,7 +14,7 @@ from apps.transactions.api.v1.serializers import AccountSerializer, CurrencySeri
 from apps.transactions.api.v1.services import ExportServices, LedgerServices, TransactionServices
 from apps.transactions.models import Account, Currency, Transaction
 from apps.transactions.permissions import OnlyAdmin, TransactionPermission
-from apps.utils import success_response
+from apps.utils import error_response, success_response
 
 
 class AccountAPIView(APIView):
@@ -28,13 +28,11 @@ class AccountAPIView(APIView):
     def post(self, request):
         try:
             user = request.user
-            print("Boss")
             serializer = self.get_serializer()
             serializer = serializer(data=request.data)
-            print("Toss")
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                return error_response(error_msg=serializer.errors)
             serializer.save(user=user)
-            print("Loss")
             return success_response(data=serializer.validated_data, status=status.HTTP_200_OK)
         except Exception as ex:
             raise ex
@@ -86,7 +84,8 @@ class TransactionsAPIView(PageNumberPagination, APIView):
             from_account_instance = Account.objects.get(id=from_account)
             serializer = self.get_serializer()
             serializer = serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                return error_response(error_msg=serializer.errors)
             serializer.save(to_account=to_account_instance, from_account=from_account_instance)
             serializer.validated_data["to_account"] = to_account_instance.title
             serializer.validated_data["from_account"] = from_account_instance.title

@@ -1,0 +1,2 @@
+sqlite
+UPDATE sqlite_sequence SET seq = 1 WHERE name = 'transactions_transaction';
